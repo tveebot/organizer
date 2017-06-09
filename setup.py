@@ -9,6 +9,10 @@ setup(
     author='david',
     author_email='fialho.david@protonmail.com',
 
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
+
+    extras_require={
+        'test': ['pytest'],
+    },
 
 )
