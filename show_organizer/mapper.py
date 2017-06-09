@@ -7,7 +7,7 @@ from show_organizer.episode import Episode
 # and E01 indicates the episode is the first episode of the season
 from show_organizer.tvshow import TVShow
 
-episode_pattern = re.compile("S(?P<season>\\d+)E(?P<number>\\d+)")
+episode_pattern = re.compile('S(?P<season>\d+)E(?P<number>\d+)\Z')
 
 
 def map_to_episode(name: str) -> Episode:
