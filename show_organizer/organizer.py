@@ -18,7 +18,7 @@ class Organizer:
         move_dir = self.get_episode_directory(episode)
 
         # Make sure the directory exists
-        os.makedirs(move_dir)
+        os.makedirs(move_dir, exist_ok=True)
 
         # Only then, move the file to the directory
         shutil.move(video_file, move_dir)

@@ -11,10 +11,10 @@ class TestOrganizer:
 
     def test_store_EpisodeDirectoryAlreadyExists_MoveTheFileThere(self, tmpdir):
         storage_dir = tmpdir.mkdir("STORAGE_DIR")
+        storage_dir.mkdir("Prison Break").mkdir("Season 05")
         organizer = Organizer(str(storage_dir))
 
         watch_dir = tmpdir.mkdir("WATCH_DIR")
-        watch_dir.mkdir("Prison Break").mkdir("Season 05")
         video_file = watch_dir.join("Prison.Break.S05E09.720p.mkv")
         video_file.write("")  # actually create the file
 
@@ -25,10 +25,10 @@ class TestOrganizer:
 
     def test_store_OnlyTVShowDirectoryExists_CreateSeasonDirectoryAnMoveTheFileThere(self, tmpdir):
         storage_dir = tmpdir.mkdir("STORAGE_DIR")
+        storage_dir.mkdir("Prison Break")
         organizer = Organizer(str(storage_dir))
 
         watch_dir = tmpdir.mkdir("WATCH_DIR")
-        watch_dir.mkdir("Prison Break")
         video_file = watch_dir.join("Prison.Break.S05E09.720p.mkv")
         video_file.write("")  # actually create the file
 
