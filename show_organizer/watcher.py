@@ -18,8 +18,11 @@ class Watcher:
         self._observer.start()
 
     def stop(self):
-        """ Stops the watch service if it is running """
+        """ Signals the watch service to terminate """
         self._observer.stop()
+
+    def join(self):
+        """ Waits for the watch service to terminate """
         self._observer.join()
 
     def add_handler(self, handler: WatchHandler):
