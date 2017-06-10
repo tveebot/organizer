@@ -49,5 +49,21 @@ class TestOrganizer:
         assert storage_dir.join("Prison Break").join("Season 05").join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
         assert not other_dir.check()
 
+    def test_organize_FileAlreadyExistsInStorage(self, tmpdir):
+        watch_dir = tmpdir.mkdir("watch")
+        storage_dir = tmpdir.mkdir("storage")
+        storage_dir.mkdir("Prison Break").mkdir("Season 05").join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
+
+        organizer = Organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)))
+        organizer.start()
+
+        watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
+
+        sleep(1)
+        organizer.stop()
+
+        # Check the file was kept in the watch directory
+        assert watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
+
     # TODO file already exists in destination directory
     # TODO no permission or OS error

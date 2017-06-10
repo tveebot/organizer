@@ -1,5 +1,7 @@
 import os
 
+import logging
+
 from show_organizer.filter import Filter
 from show_organizer.mapper import Mapper
 from show_organizer.storage_manager import StorageManager
@@ -8,6 +10,10 @@ from show_organizer.watcher import Watcher
 
 
 class Organizer(WatchHandler):
+
+    logger = logging.getLogger('show_organizer.Organizer')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
 
     def __init__(self, watch_dir: str, episode_filter: Filter, mapper: Mapper, storage_manager: StorageManager):
         """
@@ -32,11 +38,21 @@ class Organizer(WatchHandler):
         self.watcher.stop()
 
     def on_new_directory(self, dir_path):
-        episode_file = self.episode_filter.get_episode_file(dir_path)
-        episode = self.mapper.map_to_episode(os.path.basename(dir_path))
-        self.storage_manager.store(episode_file, episode)
+        self._handle_new_path(dir_path)
 
     def on_new_file(self, file_path):
-        episode_file = self.episode_filter.get_episode_file(file_path)
-        episode = self.mapper.map_to_episode(os.path.basename(file_path))
+        self._handle_new_path(file_path)
+
+    def _handle_new_path(self, path):
+
+        self.logger.info("Obtaining episode file from '%s'" % path)
+        episode_file = self.episode_filter.get_episode_file(path)
+        self.logger.info("Filter indicated the episode file is '%s'" % path)
+
+        self.logger.info("Obtaining episode information")
+        episode = self.mapper.map_to_episode(os.path.basename(path))
+        self.logger.info("Obtained info: %s" % str(episode))
+
+        self.logger.info("Moving episode file to storage")
         self.storage_manager.store(episode_file, episode)
+        self.logger.info("Episode file was moved to storage")
