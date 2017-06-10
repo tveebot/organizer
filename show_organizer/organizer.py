@@ -37,6 +37,9 @@ class Organizer(WatchHandler):
     def stop(self):
         self.watcher.stop()
 
+    def join(self):
+        self.watcher.join()
+
     def on_new_directory(self, dir_path):
         self._handle_new_path(dir_path)
 
@@ -60,6 +63,10 @@ class Organizer(WatchHandler):
 
         except StorageError as error:
             self.logger.error(str(error))
+            self.stop()
+
+        except FileExistsError as error:  # avoid collision with OS Error
+            self.logger.warning(str(error))
 
         except OSError:
             self.logger.exception("Unexpected OS Error was raised")

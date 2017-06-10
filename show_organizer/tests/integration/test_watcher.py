@@ -26,6 +26,7 @@ class TestWatcher:
         yield
 
         watcher.stop()
+        watcher.join()
 
     def test_FileIsCreated_NewFileIsDetected(self, watch_handler_mock, tmpdir):
 

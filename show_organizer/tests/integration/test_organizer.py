@@ -67,8 +67,8 @@ class TestOrganizer:
 
         # Check the file was kept in the watch directory
         assert watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
-        logger_mock.exception.assert_called_once_with(
-            "FileExistsError: File 'Prison.Break.S05E09.720p.HDTV.x264.mkv' already exists in 'Prison Break/Season 05'")
+        logger_mock.warning.assert_called_once_with(
+            "File 'Prison.Break.S05E09.720p.HDTV.x264.mkv' already exists in 'Prison Break/Season 05'")
 
     def test_organize_FilterRaisesOSError_FilesAreKeptOnWatchDirectory(self, tmpdir):
         watch_dir = tmpdir.mkdir("watch")
@@ -176,4 +176,5 @@ class TestOrganizer:
         assert watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
         logger_mock.error.assert_called_once_with("Storage directory was deleted")
 
-        # TODO organizer.join()
+        # Check the organizer exits
+        organizer.join()
