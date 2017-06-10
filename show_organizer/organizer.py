@@ -10,6 +10,10 @@ from show_organizer.watcher import Watcher
 
 
 class Organizer(WatchHandler):
+    """
+    The organizer is the central component of the application. It talks to all other components and makes the
+    application work. This is the entry point of the organizing service.
+    """
 
     logger = logging.getLogger('show_organizer.Organizer')
     logger.setLevel(logging.DEBUG)
@@ -31,23 +35,32 @@ class Organizer(WatchHandler):
         self.storage_manager = storage_manager
 
     def start(self):
+        """ Starts the organizing service """
         self.watcher.start()
         self.watcher.add_handler(self)
 
     def stop(self):
+        """ Signals the organizing service to stop """
         self.watcher.stop()
 
     def join(self):
+        """ Blocks until the organizing terminates """
         self.watcher.join()
 
     def on_new_directory(self, dir_path):
+        """ Called by the watcher if the service is running when a new directory is detected in the watch directory """
         self._handle_new_path(dir_path)
 
     def on_new_file(self, file_path):
+        """ Called by the watcher if the service is running when a new file is detected in the watch directory """
         self._handle_new_path(file_path)
 
     def _handle_new_path(self, path):
-
+        """
+        Handles a newly detected file or directory in the watch directory. It uses the filter to determine if there
+        is a new episode file and if it there is, then it uses and the mapper and storage manager to store the
+        episode in the correct sub-directory in the storage directory.
+        """
         try:
             self.logger.info("Obtaining episode file from '%s'" % path)
             episode_file = self.episode_filter.get_episode_file(path)
@@ -63,6 +76,7 @@ class Organizer(WatchHandler):
 
         except StorageError as error:
             self.logger.error(str(error))
+            # Unrecoverable error - exit the service
             self.stop()
 
         except FileExistsError as error:  # avoid collision with OS Error
@@ -72,5 +86,5 @@ class Organizer(WatchHandler):
             self.logger.exception("Unexpected OS Error was raised")
 
         except ValueError as error:
-            self.logger.error(str(error))
+            self.logger.warning(str(error))
 

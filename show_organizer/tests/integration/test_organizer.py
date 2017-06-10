@@ -110,7 +110,7 @@ class TestOrganizer:
 
         # Check the file was kept in the watch directory
         assert watch_dir.join("file.txt").check()
-        logger_mock.error.assert_called_once_with(
+        logger_mock.warning.assert_called_once_with(
             "The path '%s' is not a video file" % str(watch_dir.join("file.txt")))
 
     def test_organize_NewDirectoryDoesNotContainAnyVideoFile_FilesKeptInWatchDir(self, watch_dir, storage_dir, tmpdir):
@@ -125,7 +125,7 @@ class TestOrganizer:
 
         # Check the directory was kept in the watch directory
         assert watch_dir.join("other dir").check()
-        logger_mock.error.assert_called_once_with(
+        logger_mock.warning.assert_called_once_with(
             "The directory '%s' does not contain any video file" % str(watch_dir.join("other dir")))
 
     def test_organize_StorageDirectoryIsDeleted_FilesKeptInWatchDirAndOrganizerExits(self, watch_dir, storage_dir):
