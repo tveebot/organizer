@@ -4,7 +4,7 @@ import logging
 
 from show_organizer.filter import Filter
 from show_organizer.mapper import Mapper
-from show_organizer.storage_manager import StorageManager
+from show_organizer.storage_manager import StorageManager, StorageError
 from show_organizer.watch_handler import WatchHandler
 from show_organizer.watcher import Watcher
 
@@ -45,14 +45,25 @@ class Organizer(WatchHandler):
 
     def _handle_new_path(self, path):
 
-        self.logger.info("Obtaining episode file from '%s'" % path)
-        episode_file = self.episode_filter.get_episode_file(path)
-        self.logger.info("Filter indicated the episode file is '%s'" % path)
+        try:
+            self.logger.info("Obtaining episode file from '%s'" % path)
+            episode_file = self.episode_filter.get_episode_file(path)
+            self.logger.info("Filter indicated the episode file is '%s'" % path)
 
-        self.logger.info("Obtaining episode information")
-        episode = self.mapper.map_to_episode(os.path.basename(path))
-        self.logger.info("Obtained info: %s" % str(episode))
+            self.logger.info("Obtaining episode information")
+            episode = self.mapper.map_to_episode(os.path.basename(path))
+            self.logger.info("Obtained info: %s" % str(episode))
 
-        self.logger.info("Moving episode file to storage")
-        self.storage_manager.store(episode_file, episode)
-        self.logger.info("Episode file was moved to storage")
+            self.logger.info("Moving episode file to storage")
+            self.storage_manager.store(episode_file, episode)
+            self.logger.info("Episode file was moved to storage")
+
+        except StorageError as error:
+            self.logger.error(str(error))
+
+        except OSError:
+            self.logger.exception("Unexpected OS Error was raised")
+
+        except ValueError as error:
+            self.logger.error(str(error))
+
