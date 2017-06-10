@@ -15,9 +15,7 @@ class Organizer(WatchHandler):
     application work. This is the entry point of the organizing service.
     """
 
-    logger = logging.getLogger('show_organizer.Organizer')
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
+    logger = logging.getLogger('organizer')
 
     def __init__(self, watch_dir: str, episode_filter: Filter, mapper: Mapper, storage_manager: StorageManager):
         """
