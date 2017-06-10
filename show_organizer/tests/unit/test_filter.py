@@ -82,8 +82,10 @@ class TestFilter:
     def test_get_episode_file_PathToEmptyDirectory_RaisesValueError(self, tmpdir):
         episode_filter = Filter()
 
-        with pytest.raises(ValueError, message="The directory '%s' does not contain any video file" % str(tmpdir)):
+        with pytest.raises(ValueError) as exception_info:
             episode_filter.get_episode_file(path=str(tmpdir))
+
+        assert str(exception_info.value) == "The directory '%s' does not contain any video file" % str(tmpdir)
 
     def test_get_episode_file_PathToDirectoryWithFilesButNoneIsAVideoFile_RaisesValueError(self, tmpdir):
         episode_filter = Filter()
@@ -92,8 +94,10 @@ class TestFilter:
         tmpdir.join("other.mp3").write("this is a music file")
         tmpdir.mkdir("directory.mp4")
 
-        with pytest.raises(ValueError, message="The directory '%s' does not contain any video file" % str(tmpdir)):
+        with pytest.raises(ValueError) as exception_info:
             episode_filter.get_episode_file(path=str(tmpdir))
+
+        assert str(exception_info.value) == "The directory '%s' does not contain any video file" % str(tmpdir)
 
     def test_get_episode_file_PathToNonVideoFile_RaisesValueError(self, tmpdir):
         episode_filter = Filter()
@@ -101,5 +105,7 @@ class TestFilter:
         video_file = tmpdir.join("file.txt")
         video_file.write("")
 
-        with pytest.raises(ValueError, message="The path '%s' is not a video file" % str(video_file)):
+        with pytest.raises(ValueError) as exception_info:
             episode_filter.get_episode_file(path=str(video_file))
+
+        assert str(exception_info.value) == "The path '%s' is not a video file" % str(video_file)

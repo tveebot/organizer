@@ -23,11 +23,10 @@ class Filter:
         :raise ValueError: if the path is a file and it is not a video file or if path is a directory and does not
                            contain any video file.
         """
-
         if os.path.isdir(path):
 
             # Look inside the directory for the biggest video file
-            episode_file = max((file for file in self._list_video_files(path)), key=os.path.getsize)
+            episode_file = max((file for file in self._list_video_files(path)), key=os.path.getsize, default=None)
 
             if episode_file is None:
                 raise ValueError("The directory '%s' does not contain any video file" % path)
