@@ -4,6 +4,14 @@ import shutil
 from show_organizer.episode import Episode
 
 
+class StorageError(Exception):
+    """
+    Raised to indicate there is a critical error with the storage and the application can not proceed. This exception
+    is raised when, for instance, the storage directory is deleted.
+    """
+    pass
+
+
 class StorageManager:
     """
     The storage manager is one of the most important components. Its job is to 'store' (see store method) the episode
@@ -27,6 +35,9 @@ class StorageManager:
         :raise FileExistsError: if the episode file already exists in the destination directory.
         """
         move_dir = self.episode_dir(episode)
+
+        if not os.path.isdir(self.storage_dir):
+            raise StorageError("Storage directory was deleted")
 
         # Make sure the directory exists
         os.makedirs(move_dir, exist_ok=True)
