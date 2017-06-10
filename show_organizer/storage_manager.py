@@ -1,6 +1,8 @@
 import os
 import shutil
 
+import logging
+
 from show_organizer.episode import Episode
 
 
@@ -19,9 +21,12 @@ class StorageManager:
     based on the episode information included alongside with the episode file.
     """
 
+    logger = logging.getLogger('storageManager')
+
     def __init__(self, storage_dir: str):
         """ Defines the storage directory. This directory is the entry point where all tv show episode is stored. """
         self.storage_dir = storage_dir
+        self.logger.info("Storage directory: %d" % self.storage_dir)
 
     def store(self, episode_file: str, episode: Episode):
         """
@@ -40,10 +45,12 @@ class StorageManager:
             raise StorageError("Storage directory was deleted")
 
         # Make sure the directory exists
+        self.logger.debug("Creating directories for the episode file")
         os.makedirs(move_dir, exist_ok=True)
 
         try:
             # Only then, move the file to the directory
+            self.logger.debug("Moving episode file to '%s'" % move_dir)
             shutil.move(episode_file, move_dir)
 
         except shutil.Error:

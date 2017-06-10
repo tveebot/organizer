@@ -48,10 +48,12 @@ class Organizer(WatchHandler):
 
     def on_new_directory(self, dir_path):
         """ Called by the watcher if the service is running when a new directory is detected in the watch directory """
+        self.logger.debug("Detected new directory: %s" % os.path.relpath(self.watch_dir, dir_path))
         self._handle_new_path(dir_path)
 
     def on_new_file(self, file_path):
         """ Called by the watcher if the service is running when a new file is detected in the watch directory """
+        self.logger.debug("Detected new file: %s" % os.path.relpath(self.watch_dir, file_path))
         self._handle_new_path(file_path)
 
     def _handle_new_path(self, path):
