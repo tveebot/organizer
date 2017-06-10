@@ -20,6 +20,6 @@ class TestOrganizer:
                 "STORAGE_DIR/Castle 2009/Season 08"
         ),
     ])
-    def test_get_episode_directory(self, episode, expected_directory):
+    def test_episode_dir(self, episode, expected_directory):
 
-        assert self.organizer.get_episode_directory(episode) == expected_directory
+        assert self.organizer.episode_dir(episode) == expected_directory

@@ -26,7 +26,7 @@ class Organizer:
         :param episode:      the episode information corresponding to the given episode file.
         :raise FileExistsError: if the episode file already exists in the destination directory.
         """
-        move_dir = self.get_episode_directory(episode)
+        move_dir = self.episode_dir(episode)
 
         # Make sure the directory exists
         os.makedirs(move_dir, exist_ok=True)
@@ -39,7 +39,7 @@ class Organizer:
             raise FileExistsError("File '%s' already exists in '%s'" %
                                   (os.path.basename(episode_file), os.path.relpath(move_dir, start=self.storage_dir)))
 
-    def get_episode_directory(self, episode: Episode):
+    def episode_dir(self, episode: Episode):
         """
         Determines the episode directory based on its information. In its current form, the directory of an episode
         is composed of a season folder of the form 'Season XX', where XX indicates the season number to which the
