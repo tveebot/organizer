@@ -57,7 +57,7 @@ class TestOrganizer:
 
         # Check the file was moved to the correct storage directory
         assert storage_dir.join("Prison Break").join("Season 05").join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
-        assert not other_dir.check()
+        assert not watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264-KILLERS[rarbg]").check()
 
     def test_organize_FileAlreadyExistsInStorage(self, watch_dir, storage_dir):
 

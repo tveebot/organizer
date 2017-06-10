@@ -1,6 +1,6 @@
 import os
-
 import logging
+import shutil
 
 from show_organizer.filter import Filter
 from show_organizer.mapper import Mapper
@@ -27,6 +27,7 @@ class Organizer(WatchHandler):
         :param storage_manager: component responsible for managing the storage of new episode files.
         """
         super().__init__()
+        self.watch_dir = watch_dir
         self.watcher = Watcher(watch_dir)
         self.episode_filter = episode_filter
         self.mapper = mapper
@@ -71,6 +72,10 @@ class Organizer(WatchHandler):
             self.logger.info("Moving episode file to storage")
             self.storage_manager.store(episode_file, episode)
             self.logger.info("Episode file was moved to storage")
+
+            if os.path.exists(path):
+                shutil.rmtree(path)
+                self.logger.info("Removed '%s'" % path)
 
         except StorageError as error:
             self.logger.error(str(error))
