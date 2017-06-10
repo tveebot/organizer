@@ -1,7 +1,21 @@
+"""
+TV Show Organizer
+
+Usage:
+  tvshow_organizer --conf=<config_file>
+  tvshow_organizer (-h | --help)
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+
+"""
 import os
 import sys
 import logging
+from configparser import ConfigParser
 from logging.config import fileConfig
+from docopt import docopt
 
 from show_organizer.filter import Filter
 from show_organizer.mapper import Mapper
@@ -10,20 +24,24 @@ from show_organizer.storage_manager import StorageManager
 
 
 def main():
+    args = docopt(__doc__, version='TV Show Organizer Version 0.1')
 
-    # setup loggers
-    logging_conf_file = '../default.ini'
+    config_file = args['--conf']
 
-    if not os.path.isfile(logging_conf_file):
-        print("Config file '%s' does not exist" % logging_conf_file, file=sys.stderr)
+    if not os.path.isfile(config_file):
+        print("Error: config file '%s' does not exist" % config_file, file=sys.stderr)
         sys.exit(1)
 
-    fileConfig(logging_conf_file)
+    # setup loggers
+    fileConfig(config_file)
     logger = logging.getLogger()
 
     # load configuration file
-    watch_dir = "../watch"
-    storage_dir = "../storage"
+    config = ConfigParser()
+    config.read(config_file)
+
+    watch_dir = config['DEFAULT']['WatchDirectory']
+    storage_dir = config['DEFAULT']['StorageDirectory']
 
     if not os.path.isdir(watch_dir):
         logger.error("Watch directory does not exist: %s" % watch_dir)
