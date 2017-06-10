@@ -1,11 +1,6 @@
 import os
 
 
-def __list_video_files():
-    for file in os.listdir(path):
-        __
-
-
 class Filter:
 
     video_extensions = {'.mkv', '.mp4', '.avi', '.m4p', '.m4v'}
