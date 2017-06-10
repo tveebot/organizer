@@ -11,6 +11,8 @@ setup(
 
     packages=find_packages(exclude=['tests', 'tests.unit', 'tests.integration']),
 
+    install_requires=['watchdog'],
+
     extras_require={
         'test': ['pytest'],
     },
