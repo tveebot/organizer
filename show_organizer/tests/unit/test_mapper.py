@@ -26,5 +26,7 @@ class TestMapper:
     ])
     def test_incorrect(self, name):
 
-        with pytest.raises(ValueError, message="The name '%s' did not map to an episode" % name):
+        with pytest.raises(ValueError) as exception_info:
             Mapper().map_to_episode(name)
+
+        assert str(exception_info.value) == "The name '%s' did not map to an episode" % name
