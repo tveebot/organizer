@@ -31,7 +31,6 @@ class Watcher:
 
     def join(self):
         """ Waits for the watch service to terminate """
-        self.logger.debug("Waiting for watcher to terminate")
         self._observer.join()
         self.logger.debug("Watcher has terminated")
 

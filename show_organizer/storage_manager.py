@@ -26,7 +26,7 @@ class StorageManager:
     def __init__(self, storage_dir: str):
         """ Defines the storage directory. This directory is the entry point where all tv show episode is stored. """
         self.storage_dir = storage_dir
-        self.logger.info("Storage directory: %d" % self.storage_dir)
+        self.logger.info("Storage directory: %s" % self.storage_dir)
 
     def store(self, episode_file: str, episode: Episode):
         """
@@ -40,6 +40,7 @@ class StorageManager:
         :raise FileExistsError: if the episode file already exists in the destination directory.
         """
         move_dir = self.episode_dir(episode)
+        self.logger.debug("Episode file will be stored in directory: %s" % os.path.relpath(self.storage_dir, move_dir))
 
         if not os.path.isdir(self.storage_dir):
             raise StorageError("Storage directory was deleted")

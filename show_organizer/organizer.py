@@ -63,9 +63,9 @@ class Organizer(WatchHandler):
         episode in the correct sub-directory in the storage directory.
         """
         try:
-            self.logger.info("Obtaining episode file from '%s'" % path)
+            self.logger.info("Obtaining episode file from '%s'" % os.path.relpath(self.watch_dir, path))
             episode_file = self.episode_filter.get_episode_file(path)
-            self.logger.info("Filter indicated the episode file is '%s'" % path)
+            self.logger.info("Filter indicated the episode file is '%s'" % os.path.relpath(self.watch_dir, path))
 
             self.logger.info("Obtaining episode information")
             episode = self.mapper.map_to_episode(os.path.basename(path))
@@ -73,15 +73,16 @@ class Organizer(WatchHandler):
 
             self.logger.info("Moving episode file to storage")
             self.storage_manager.store(episode_file, episode)
-            self.logger.info("Episode file was moved to storage")
+            self.logger.info("Episode file stored in '%s'" % os.path.relpath(self.storage_manager.storage_dir, path))
 
             if os.path.exists(path):
                 shutil.rmtree(path)
-                self.logger.info("Removed '%s'" % path)
+                self.logger.info("Removed '%s' from watch directory" % os.path.relpath(self.watch_dir, path))
 
         except StorageError as error:
             self.logger.error(str(error))
             # Unrecoverable error - exit the service
+            self.logger.info("Unrecoverable error: service will exit")
             self.stop()
 
         except FileExistsError as error:  # avoid collision with OS Error
