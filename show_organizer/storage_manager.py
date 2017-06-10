@@ -4,10 +4,10 @@ import shutil
 from show_organizer.episode import Episode
 
 
-class Organizer:
+class StorageManager:
     """
-    The organizer is one of the most important components. Its job is to 'store' (see store method) the episode file in
-    the correct sub-directory inside the storage directory. The directory where the file is stored is determined
+    The storage manager is one of the most important components. Its job is to 'store' (see store method) the episode
+    file in the correct sub-directory inside the storage directory. The directory where the file is stored is determined
     based on the episode information included alongside with the episode file.
     """
 
@@ -17,9 +17,9 @@ class Organizer:
 
     def store(self, episode_file: str, episode: Episode):
         """
-        This is the entry point of the organizer. This method is called to store an episode file in it correct place,
-        based on its episode information provided in the 'episode' argument. If the destination directory does not
-        exist, then it is automatically created. The episode file is moved to the destination directory and not
+        This is the entry point of the storage manager. This method is called to store an episode file in it correct
+        place, based on its episode information provided in the 'episode' argument. If the destination directory does
+        not exist, then it is automatically created. The episode file is moved to the destination directory and not
         copied. Which means that after calling this method the file is removed from its current directory.
 
         :param episode_file: the episode file to store.

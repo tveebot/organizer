@@ -1,14 +1,14 @@
 import pytest
 
 from show_organizer.episode import Episode
-from show_organizer.organizer import Organizer
+from show_organizer.storage_manager import StorageManager
 from show_organizer.tvshow import TVShow
 
 
-class TestOrganizer:
+class TestStorageManager:
 
     # Using the same storage directory for all tests
-    organizer = Organizer("STORAGE_DIR")
+    storage_manager = StorageManager("STORAGE_DIR")
 
     @pytest.mark.parametrize("episode, expected_directory", [
         (
@@ -22,4 +22,4 @@ class TestOrganizer:
     ])
     def test_episode_dir(self, episode, expected_directory):
 
-        assert self.organizer.episode_dir(episode) == expected_directory
+        assert self.storage_manager.episode_dir(episode) == expected_directory
