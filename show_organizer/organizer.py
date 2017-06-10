@@ -20,5 +20,10 @@ class Organizer:
         # Make sure the directory exists
         os.makedirs(move_dir, exist_ok=True)
 
-        # Only then, move the file to the directory
-        shutil.move(video_file, move_dir)
+        try:
+            # Only then, move the file to the directory
+            shutil.move(video_file, move_dir)
+
+        except shutil.Error:
+            raise FileExistsError("File '%s' already exists in '%s'" %
+                                  (os.path.basename(video_file), os.path.relpath(move_dir, start=self.storage_dir)))
