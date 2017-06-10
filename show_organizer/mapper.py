@@ -15,7 +15,7 @@ class Mapper:
     # An episode pattern corresponds to a 'word' of the form S01E01
     # Where S01 indicates the episode corresponds to season 1
     # and E01 indicates the episode is the first episode of the season
-    episode_pattern = re.compile('S(?P<season>\d+)E(?P<number>\d+)\Z')
+    _episode_pattern = re.compile('S(?P<season>\d+)E(?P<number>\d+)\Z')
 
     def map_to_episode(self, name: str) -> Episode:
         """
@@ -36,7 +36,7 @@ class Mapper:
         # Look for an episode pattern
         for index, word in enumerate(words):
 
-            match = self.episode_pattern.match(word)
+            match = self._episode_pattern.match(word)
             if match:
                 # The previous words compose the tv show name
                 tvshow_name = " ".join(words[:index])
