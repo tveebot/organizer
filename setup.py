@@ -17,4 +17,10 @@ setup(
         'test': ['pytest'],
     },
 
+    entry_points={
+        'console_scripts': [
+            'show_organizer=show_organizer:main',
+        ],
+    }
+
 )
