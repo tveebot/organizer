@@ -78,3 +78,28 @@ class TestFilter:
         big_video_file.write("VERY BIG FILE")
 
         assert episode_filter.get_episode_file(path=str(tmpdir)) == big_video_file
+
+    def test_get_episode_file_PathToEmptyDirectory_RaisesValueError(self, tmpdir):
+        episode_filter = Filter()
+
+        with pytest.raises(ValueError, message="The directory '%s' does not contain any video file" % str(tmpdir)):
+            episode_filter.get_episode_file(path=str(tmpdir))
+
+    def test_get_episode_file_PathToDirectoryWithFilesButNoneIsAVideoFile_RaisesValueError(self, tmpdir):
+        episode_filter = Filter()
+
+        tmpdir.join("other.txt").write("this is a text file")
+        tmpdir.join("other.mp3").write("this is a music file")
+        tmpdir.mkdir("directory.mp4")
+
+        with pytest.raises(ValueError, message="The directory '%s' does not contain any video file" % str(tmpdir)):
+            episode_filter.get_episode_file(path=str(tmpdir))
+
+    def test_get_episode_file_PathToNonVideoFile_RaisesValueError(self, tmpdir):
+        episode_filter = Filter()
+
+        video_file = tmpdir.join("file.txt")
+        video_file.write("")
+
+        with pytest.raises(ValueError, message="The path '%s' is not a video file" % str(video_file)):
+            episode_filter.get_episode_file(path=str(video_file))
