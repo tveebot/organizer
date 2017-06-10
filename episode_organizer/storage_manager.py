@@ -3,7 +3,7 @@ import shutil
 
 import logging
 
-from show_organizer.episode import Episode
+from episode_organizer.episode import Episode
 
 
 class StorageError(Exception):

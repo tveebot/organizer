@@ -1,8 +1,8 @@
 import pytest
 
-from show_organizer.episode import Episode
-from show_organizer.storage_manager import StorageManager
-from show_organizer.tvshow import TVShow
+from episode_organizer.episode import Episode
+from episode_organizer.storage_manager import StorageManager
+from episode_organizer.tvshow import TVShow
 
 
 class TestStorageManager:

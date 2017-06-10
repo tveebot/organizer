@@ -4,10 +4,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from show_organizer.filter import Filter
-from show_organizer.mapper import Mapper
-from show_organizer.organizer import Organizer
-from show_organizer.storage_manager import StorageManager
+from episode_organizer.filter import Filter
+from episode_organizer.mapper import Mapper
+from episode_organizer.organizer import Organizer
+from episode_organizer.storage_manager import StorageManager
 
 
 class TestOrganizer:

@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 
 # noinspection PyProtectedMember
-from show_organizer.watch_handler import _BaseHandler
-from show_organizer.watcher import Watcher
+from episode_organizer.watch_handler import _BaseHandler
+from episode_organizer.watcher import Watcher
 
 
 class TestWatcher:

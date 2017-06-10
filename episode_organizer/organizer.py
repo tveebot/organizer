@@ -2,11 +2,11 @@ import os
 import logging
 import shutil
 
-from show_organizer.filter import Filter
-from show_organizer.mapper import Mapper
-from show_organizer.storage_manager import StorageManager, StorageError
-from show_organizer.watch_handler import WatchHandler
-from show_organizer.watcher import Watcher
+from episode_organizer.filter import Filter
+from episode_organizer.mapper import Mapper
+from episode_organizer.storage_manager import StorageManager, StorageError
+from episode_organizer.watch_handler import WatchHandler
+from episode_organizer.watcher import Watcher
 
 
 class Organizer(WatchHandler):

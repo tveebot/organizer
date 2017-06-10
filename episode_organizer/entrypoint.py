@@ -1,9 +1,9 @@
 """
-TV Show Organizer
+Episode Organizer
 
 Usage:
-  tvshow_organizer --conf=<config_file>
-  tvshow_organizer (-h | --help)
+  episode_organizer --conf=<config_file>
+  episode_organizer (-h | --help)
 
 Options:
   -h --help     Show this screen.
@@ -17,10 +17,10 @@ from configparser import ConfigParser
 from logging.config import fileConfig
 from docopt import docopt
 
-from show_organizer.filter import Filter
-from show_organizer.mapper import Mapper
-from show_organizer.organizer import Organizer
-from show_organizer.storage_manager import StorageManager
+from episode_organizer.filter import Filter
+from episode_organizer.mapper import Mapper
+from episode_organizer.organizer import Organizer
+from episode_organizer.storage_manager import StorageManager
 
 
 def main():
