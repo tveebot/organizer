@@ -41,3 +41,40 @@ class TestFilter:
         path = tmpdir.join("video.mkv")  # without calling write() the file is not created
 
         assert not Filter.is_video_file(str(path))
+
+    def test_get_episode_file_PathToVideoFile_ReturnThatSameVideoFile(self, tmpdir):
+        episode_filter = Filter()
+
+        video_file = tmpdir.join("video.mkv")
+        video_file.write("")
+
+        assert episode_filter.get_episode_file(path=str(video_file)) == str(video_file)
+
+    def test_get_episode_file_PathToDirectoryWithASingleVideoFile_ReturnTheSingleVideoFile(self, tmpdir):
+        episode_filter = Filter()
+
+        video_file = tmpdir.join("video.mkv")
+        video_file.write("")
+
+        assert episode_filter.get_episode_file(path=str(tmpdir)) == video_file
+
+    def test_get_episode_file_PathToDirectoryWithASingleVideoFileAndOtherFiles_ReturnTheVideoFile(self, tmpdir):
+        episode_filter = Filter()
+
+        tmpdir.join("other.txt").write("this is a text file")
+        tmpdir.join("other.mp3").write("this is a music file")
+        video_file = tmpdir.join("video.mkv")
+        video_file.write("")
+
+        assert episode_filter.get_episode_file(path=str(tmpdir)) == video_file
+
+    def test_get_episode_file_PathToDirectoryWithTwoVideoFiles_ReturnTheBiggestFile(self, tmpdir):
+        episode_filter = Filter()
+
+        # Note the small file has only 4 characters and the big file has 13 characters
+
+        tmpdir.join("small_video.mkv").write("small")
+        big_video_file = tmpdir.join("big_video.mkv")
+        big_video_file.write("VERY BIG FILE")
+
+        assert episode_filter.get_episode_file(path=str(tmpdir)) == big_video_file
