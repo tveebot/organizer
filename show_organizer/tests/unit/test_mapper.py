@@ -1,7 +1,7 @@
 import pytest
 
 from show_organizer.episode import Episode
-from show_organizer.mapper import map_to_episode
+from show_organizer.mapper import Mapper
 from show_organizer.tvshow import TVShow
 
 
@@ -14,7 +14,7 @@ class TestMapper:
     ])
     def test_correct(self, name, expected_episode):
 
-        assert map_to_episode(name) == expected_episode
+        assert Mapper().map_to_episode(name) == expected_episode
 
     @pytest.mark.parametrize("name", [
         "Prison.Break.720p.HDTV.x264-KILLERS[rarbg]",
@@ -27,4 +27,4 @@ class TestMapper:
     def test_incorrect(self, name):
 
         with pytest.raises(ValueError, message="The name '%s' did not map to an episode" % name):
-            map_to_episode(name)
+            Mapper().map_to_episode(name)
