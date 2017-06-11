@@ -27,23 +27,31 @@ from episode_organizer.storage_manager import StorageManager
 def main():
     args = docopt(__doc__, version='TV Show Organizer Version 0.1')
 
-    if args['--conf']:
-        config_file = args['--conf']
-    else:
-        # Use default config
-        config_file = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/default.ini')
+    # Load configurations
+    config = ConfigParser()
 
-    if not os.path.isfile(config_file):
-        print("Error: config file '%s' does not exist" % config_file, file=sys.stderr)
-        sys.exit(1)
+    # Always load the default configuration file
+    # The configurations in this file are overridden by the ones defined in the configuration file provided
+    # by the user, if the user provides one.
+    default_config = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/default.ini')
+    config.read(default_config)
+
+    if args['--conf']:
+        # User provided a configuration file
+        config_file = args['--conf']
+
+        if not os.path.isfile(config_file):
+            print("Error: config file '%s' does not exist" % config_file, file=sys.stderr)
+            sys.exit(1)
+
+        # Override configurations in the default conf file
+        config.read(config_file)
 
     # setup loggers
-    fileConfig(config_file)
+    fileConfig(default_config)
     logger = logging.getLogger()
 
-    # load configuration file
-    config = ConfigParser()
-    config.read(config_file)
+    # Validate configurations: check if both the watch and storage directories exist
 
     watch_dir = config['DEFAULT']['WatchDirectory']
     storage_dir = config['DEFAULT']['StorageDirectory']
@@ -56,7 +64,7 @@ def main():
         logger.error("Storage directory does not exist: %s" % storage_dir)
         sys.exit(1)
 
-    # start service
+    # Configure the organizer
     episode_filter = Filter()
     mapper = Mapper()
     storage_manager = StorageManager(storage_dir)
@@ -64,6 +72,7 @@ def main():
     organizer = Organizer(watch_dir, episode_filter, mapper, storage_manager)
 
     try:
+        # Start the service in a thread and wait until it terminates
         organizer.start()
         logger.info("Started organizing service")
 
