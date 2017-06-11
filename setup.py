@@ -21,6 +21,10 @@ setup(
         'console_scripts': [
             'episode-organizer=episode_organizer:main',
         ],
-    }
+    },
+
+    package_data={
+        'episode_organizer': ['default.ini'],
+    },
 
 )

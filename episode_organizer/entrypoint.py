@@ -2,7 +2,7 @@
 Episode Organizer
 
 Usage:
-  episode_organizer --conf=<config_file>
+  episode_organizer [ --conf=<config_file> ]
   episode_organizer (-h | --help)
 
 Options:
@@ -16,6 +16,7 @@ import logging
 from configparser import ConfigParser
 from logging.config import fileConfig
 from docopt import docopt
+from pkg_resources import resource_filename, Requirement
 
 from episode_organizer.filter import Filter
 from episode_organizer.mapper import Mapper
@@ -26,7 +27,11 @@ from episode_organizer.storage_manager import StorageManager
 def main():
     args = docopt(__doc__, version='TV Show Organizer Version 0.1')
 
-    config_file = args['--conf']
+    if args['--conf']:
+        config_file = args['--conf']
+    else:
+        # Use default config
+        config_file = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/default.ini')
 
     if not os.path.isfile(config_file):
         print("Error: config file '%s' does not exist" % config_file, file=sys.stderr)
