@@ -1,4 +1,5 @@
 import logging
+import os
 
 from watchdog.observers.api import ObservedWatch
 
@@ -52,6 +53,8 @@ class Watcher:
          
         :param new_watch_dir: the new directory to be watched.
         """
+        if not os.path.isdir(new_watch_dir):
+            raise FileNotFoundError("New watch directory does not exist: %s" % new_watch_dir)
 
         # Unschedule all watches
         self._observer.unschedule_all()

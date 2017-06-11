@@ -101,3 +101,19 @@ class TestWatcher:
 
         # was new file detected?
         watch_handler_mock.on_new_file.assert_not_called()
+
+    def test_ChangingToNonExistingWatchDir_WatcherRaisesFileNotFoundAndKeepsWatchDir(self, watch_handler_mock, tmpdir):
+
+        old_watch_dir = tmpdir.mkdir("watch1")
+        new_watch_dir = tmpdir.join("watch2")  # note the 'join': the directory is not created
+
+        with self.setup_watcher(str(old_watch_dir), watch_handler_mock) as watcher:
+            with pytest.raises(FileNotFoundError):
+                watcher.change_watch_dir(str(new_watch_dir))
+
+            old_watch_dir.join("file.txt").write("")
+
+        # was new file detected?
+        watch_handler_mock.on_new_file.assert_called_once_with(str(old_watch_dir.join("file.txt")))
+
+        assert watcher.watch_dir == str(old_watch_dir)
