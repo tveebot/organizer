@@ -1,6 +1,8 @@
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCServer
 
+import logging
+
 from episode_organizer.organizer import Organizer
 
 
@@ -24,11 +26,19 @@ class Configurator(Thread):
 
 class _Configurator:
 
+    logger = logging.getLogger('configurator')
+
     def __init__(self, organizer: Organizer):
         self.organizer = organizer
 
     def set_watch_dir(self, watch_dir):
-        self.organizer.set_watch_dir(watch_dir)
+
+        try:
+            self.organizer.set_watch_dir(watch_dir)
+
+        except FileNotFoundError as error:
+            self.logger.warning(str(error))
+            raise error
 
     def watch_dir(self):
         return self.organizer.watch_dir
