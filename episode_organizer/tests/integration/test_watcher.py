@@ -23,7 +23,7 @@ class TestWatcher:
         watcher = Watcher(watch_dir)
         watcher.add_handler(watch_handler)
         watcher.start()
-        yield
+        yield watcher
 
         watcher.stop()
         watcher.join()
@@ -77,3 +77,37 @@ class TestWatcher:
 
             # was new file detected?
             watch_handler_mock.on_new_directory.assert_called_once_with(os.path.join(str(watch_dir), "dir"))
+
+    def test_ChangingWatchDir_WatcherDetectsChangesInNewWatchDir(self, watch_handler_mock, tmpdir):
+
+        old_watch_dir = tmpdir.mkdir("watch1")
+        new_watch_dir = tmpdir.mkdir("watch2")
+
+        with self.setup_watcher(str(old_watch_dir), watch_handler_mock) as watcher:
+            watcher.change_watch_dir(str(new_watch_dir))
+
+            new_watch_dir.join("file.txt").write("")
+
+            sleep(1)
+
+            # was new file detected?
+            watch_handler_mock.on_new_file.assert_called_once_with(str(new_watch_dir.join("file.txt")))
+
+        assert watcher.watch_dir == str(new_watch_dir)
+
+    def test_ChangingWatchDir_WatcherDoesNotDetectNewFilesOnTheOldWatchDir(self, watch_handler_mock, tmpdir):
+
+        old_watch_dir = tmpdir.mkdir("watch1")
+        new_watch_dir = tmpdir.mkdir("watch2")
+
+        with self.setup_watcher(str(old_watch_dir), watch_handler_mock) as watcher:
+            watcher.change_watch_dir(str(new_watch_dir))
+
+            old_watch_dir.join("file.txt").write("")
+
+            sleep(1)
+
+            # was new file detected?
+            watch_handler_mock.on_new_file.assert_not_called()
+
+        assert watcher.watch_dir == str(new_watch_dir)

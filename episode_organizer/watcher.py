@@ -1,5 +1,7 @@
 import logging
 
+from watchdog.observers.api import ObservedWatch
+
 from episode_organizer.watch_handler import WatchHandler
 from watchdog.observers import Observer
 
@@ -14,8 +16,9 @@ class Watcher:
 
     def __init__(self, watch_dir):
         """ Initializes the watch service, but does not start it! """
-        self.watch_dir = watch_dir
+        self._watch_dir = watch_dir
         self._observer = Observer()
+        self._handlers = []
 
         self.logger.info("Watch directory: %s" % self.watch_dir)
 
@@ -36,4 +39,24 @@ class Watcher:
 
     def add_handler(self, handler: WatchHandler):
         """ Adds a new watch handler to the service """
-        self._observer.schedule(handler.base_handler, self.watch_dir, recursive=False)
+        self._observer.schedule(handler.base_handler, self._watch_dir, recursive=False)
+        self._handlers.append(handler)
+
+    @property
+    def watch_dir(self):
+        return self._watch_dir
+
+    def change_watch_dir(self, new_watch_dir: str):
+        """
+        Changes the directory being watched. Changes to the previous directory will no longer be detected.
+         
+        :param new_watch_dir: the new directory to be watched.
+        """
+
+        # Unschedule all watches
+        self._observer.unschedule_all()
+
+        self._watch_dir = new_watch_dir
+
+        for handler in self._handlers:
+            self._observer.schedule(handler.base_handler, self._watch_dir, recursive=False)
