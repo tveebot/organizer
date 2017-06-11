@@ -2,7 +2,7 @@
 Episode Organizer
 
 Usage:
-  episode_organizer [ --conf=<config_file> ]
+  episode_organizer [ --conf=<config_file> ] [ --logs=<logs_config> ]
   episode_organizer (-h | --help)
 
 Options:
@@ -47,8 +47,22 @@ def main():
         # Override configurations in the default conf file
         config.read(config_file)
 
-    # setup loggers
-    fileConfig(default_config)
+    # Setup loggers
+
+    if args['--logs']:
+        # User provided a config file for the logger
+        logs_config_file = args['--logs']
+
+        if not os.path.isfile(logs_config_file):
+            print("Error: logs config file '%s' does not exist" % logs_config_file, file=sys.stderr)
+            sys.exit(1)
+
+        fileConfig(logs_config_file)
+
+    else:
+        # Use the default
+        fileConfig(default_config)
+
     logger = logging.getLogger()
 
     # Validate configurations: check if both the watch and storage directories exist
