@@ -27,6 +27,7 @@ class Configurator(Thread):
     def stop(self):
         """ Stops the service. This method should be called before exiting the application """
         self._server.shutdown()
+        self._server.server_close()
 
 
 class _Configurator:
