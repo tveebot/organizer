@@ -1,5 +1,5 @@
-from episode_organizer import entrypoint
+from episode_organizer.entrypoint import EntryPoint
 
 
 def main():
-    entrypoint.main()
+    EntryPoint().main()

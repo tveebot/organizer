@@ -25,8 +25,20 @@ class StorageManager:
 
     def __init__(self, storage_dir: str):
         """ Defines the storage directory. This directory is the entry point where all tv show episode is stored. """
-        self.storage_dir = storage_dir
+        self._storage_dir = storage_dir
         self.logger.info("Storage directory: %s" % self.storage_dir)
+
+    @property
+    def storage_dir(self):
+        return self._storage_dir
+
+    @storage_dir.setter
+    def storage_dir(self, value):
+
+        if not os.path.isdir(value):
+            raise FileNotFoundError("New storage directory does not exist: %s" % value)
+
+        self._storage_dir = value
 
     def store(self, episode_file: str, episode: Episode):
         """

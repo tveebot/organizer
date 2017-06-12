@@ -1,6 +1,7 @@
 import os
 import logging
 import shutil
+import threading
 
 from episode_organizer.filter import Filter
 from episode_organizer.mapper import Mapper
@@ -27,11 +28,26 @@ class Organizer(WatchHandler):
         :param storage_manager: component responsible for managing the storage of new episode files.
         """
         super().__init__()
-        self.watch_dir = watch_dir
         self.watcher = Watcher(watch_dir)
         self.episode_filter = episode_filter
         self.mapper = mapper
         self.storage_manager = storage_manager
+
+        self._watch_dir_lock = threading.Lock()
+        self._storage_dir_lock = threading.Lock()
+
+    @property
+    def watch_dir(self):
+        return self.watcher.watch_dir
+
+    @property
+    def storage_dir(self):
+        return self.storage_manager.storage_dir
+
+    @storage_dir.setter
+    def storage_dir(self, value):
+        with self._storage_dir_lock:
+            self.storage_manager.storage_dir = value
 
     def start(self):
         """ Starts the organizing service """
@@ -45,6 +61,11 @@ class Organizer(WatchHandler):
     def join(self):
         """ Blocks until the organizing terminates """
         self.watcher.join()
+
+    def set_watch_dir(self, watch_dir):
+        """ Sets the directory to look for new episode files. This method is thread safe """
+        with self._watch_dir_lock:
+            self.watcher.change_watch_dir(watch_dir)
 
     def on_new_directory(self, dir_path):
         """ Called by the watcher if the service is running when a new directory is detected in the watch directory """
