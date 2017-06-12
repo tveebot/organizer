@@ -14,9 +14,9 @@ class Configurator(Thread):
 
     logger = logging.getLogger('configurator')
 
-    def __init__(self, organizer: Organizer):
+    def __init__(self, organizer: Organizer, bind_address=("localhost", 8000)):
         super().__init__()
-        self._server = SimpleXMLRPCServer(("localhost", 8000), requestHandler=RequestHandler, allow_none=True)
+        self._server = SimpleXMLRPCServer(bind_address, requestHandler=RequestHandler, allow_none=True)
         self._server.register_instance(_Configurator(organizer))
 
     def run(self):
