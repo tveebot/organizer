@@ -34,9 +34,10 @@ class Configurator(Thread):
 
     def stop(self):
         """ Stops the service. This method should be called before exiting the application """
-        self._server.shutdown()
-        self._server.server_close()
-        self._server = None
+        if self._server:
+            self._server.shutdown()
+            self._server.server_close()
+            self._server = None
 
     def set_watch_dir(self, watch_dir):
         """
