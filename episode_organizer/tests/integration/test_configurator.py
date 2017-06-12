@@ -17,7 +17,9 @@ class TestConfigurator:
     @contextmanager
     def setup_system(self, watch_dir, storage_dir, configurator_logger_mock=None):
         organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
-        configurator = Configurator(organizer)
+
+        # Note config and config_file are mock objects - the goal is to ignore the configs
+        configurator = Configurator(config=MagicMock(), config_file=MagicMock(), organizer=organizer)
         organizer.start()
         configurator.start()
 

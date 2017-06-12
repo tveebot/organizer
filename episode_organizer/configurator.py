@@ -14,9 +14,11 @@ class Configurator(Thread):
 
     logger = logging.getLogger('configurator')
 
-    def __init__(self, organizer: Organizer, bind_address=("localhost", 8000)):
+    def __init__(self, config, config_file, organizer: Organizer, bind_address=("localhost", 8000)):
         """ Associates the configurator with an organizer and sets the bind address for the service """
         super().__init__()
+        self._config = config
+        self.config_file = config_file
         self._organizer = organizer
         self._bind_address = bind_address
         self._server = None
@@ -38,13 +40,22 @@ class Configurator(Thread):
 
     def set_watch_dir(self, watch_dir):
         """
-        Sets a new watch directory.
+        Sets a new watch directory. The configuration file is also updated if and only if the change is valid.
 
         :param watch_dir: the directory to set as watch directory.
         :raise FileNotFoundError: If the given directory does not exist.
         """
         try:
+            # Update the organizer before updating the config file
+            # This way the config file is not updated if the new directory is not valid
             self._organizer.set_watch_dir(watch_dir)
+
+            # Update the config file
+            self._config['DEFAULT']['WatchDirectory'] = watch_dir
+            with open(self.config_file, "w") as file:
+                self._config.write(file)
+                Configurator.logger.debug("WatchDirectory parameter was updated in the config file")
+
             Configurator.logger.info("Watch directory was changed to: %s" % watch_dir)
 
         except FileNotFoundError as error:
@@ -58,13 +69,22 @@ class Configurator(Thread):
 
     def set_storage_dir(self, storage_dir):
         """
-        Sets a new storage directory.
+        Sets a new storage directory. The configuration file is also updated if and only if the change is valid.
 
         :param storage_dir: the directory to set as storage directory.
         :raise FileNotFoundError: If the given directory does not exist.
         """
         try:
+            # Update the organizer before updating the config file
+            # This way the config file is not updated if the new directory is not valid
             self._organizer.storage_dir = storage_dir
+
+            # Update the config file
+            self._config['DEFAULT']['StorageDirectory'] = storage_dir
+            with open(self.config_file, "w") as file:
+                self._config.write(file)
+                Configurator.logger.debug("StorageDirectory parameter was updated in the config file")
+
             Configurator.logger.info("Storage directory was changed to: %s" % storage_dir)
 
         except FileNotFoundError as error:
