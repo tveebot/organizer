@@ -117,7 +117,7 @@ class EntryPoint:
 
         else:
             # Use the default
-            fileConfig(self.DEFAULT_USER_CONFIG_FILE)
+            fileConfig(self.default_config_file)
 
         self.logger = logging.getLogger()
 
