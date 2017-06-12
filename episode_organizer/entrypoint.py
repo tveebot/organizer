@@ -19,6 +19,7 @@ from logging.config import fileConfig
 from docopt import docopt
 from pkg_resources import resource_filename, Requirement
 
+from episode_organizer.configurator import Configurator
 from episode_organizer.filter import Filter
 from episode_organizer.mapper import Mapper
 from episode_organizer.organizer import Organizer
@@ -42,6 +43,7 @@ class EntryPoint:
         self.load_configurations(config_file=args['--conf'])
         self.setup_loggers(logs_config_file=args['--logs'])
         self.setup_organizer()
+        self.setup_configurator()
 
         try:
             self.start_services()
@@ -120,17 +122,25 @@ class EntryPoint:
 
         self.organizer = Organizer(watch_dir, episode_filter, mapper, storage_manager)
 
+    def setup_configurator(self):
+        self.configurator = Configurator(self.config, self.config_file, self.organizer)
+
     def start_services(self):
         self.logger.info("Starting organizer service...")
         self.organizer.start()
+        self.logger.info("Starting configurator service...")
+        self.configurator.start()
 
     def serve_forever(self):
         self.logger.info("Running...")
         self.organizer.join()
+        self.configurator.join()
 
     def stop_services(self):
         self.logger.info("Stopping the organizer service...")
         self.organizer.stop()
+        self.logger.info("Stopping the configurator service...")
+        self.configurator.stop()
 
         self.logger.info("All services were stopped")
 
