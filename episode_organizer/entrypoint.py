@@ -10,6 +10,7 @@ Options:
   --version     Show version.
 
 """
+import configparser
 import logging
 import os
 import sys
@@ -29,8 +30,12 @@ from episode_organizer.storage_manager import StorageManager
 
 class EntryPoint:
 
-    DEFAULT_CONFIG_FILE_LOCATION = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
-    DEFAULT_CONFIG_FILE = os.path.join(DEFAULT_CONFIG_FILE_LOCATION, "config.ini")
+    DEFAULT_USER_CONFIG_FILE_LOCATION = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
+    DEFAULT_USER_CONFIG_FILE = os.path.join(DEFAULT_USER_CONFIG_FILE_LOCATION, "config.ini")
+
+    # The configurations in this file are overridden by the ones defined in the configuration file provided
+    # by the user, if the user provides one.
+    default_config_file = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/default.ini')
 
     ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
                             "2[0-4][0-9]|25[0-5])$")
@@ -38,7 +43,7 @@ class EntryPoint:
     hostname_pattern = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|"
                                   "[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
-    config_file = DEFAULT_CONFIG_FILE
+    config_file = DEFAULT_USER_CONFIG_FILE
     config = ConfigParser()
     logger = logging.getLogger()
     organizer = None
@@ -52,6 +57,10 @@ class EntryPoint:
             self.setup_loggers(logs_config_file=args['--logs'])
             self.setup_organizer()
             self.setup_configurator()
+
+        except configparser.Error as error:
+            self.logger.error(str(error))
+            sys.exit(1)
 
         except ValueError as error:
             self.logger.error(str(error))
@@ -77,12 +86,8 @@ class EntryPoint:
 
     def load_configurations(self, config_file):
 
-        # Always load the default configuration file
-        # The configurations in this file are overridden by the ones defined in the configuration file provided
-        # by the user, if the user provides one.
-        default_config = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/default.ini')
-
-        self.config.read(default_config)
+        # Use the settings in the default config file if the user config file does not include some parameters
+        self.config.read(self.default_config_file)
 
         if config_file:
 
@@ -99,8 +104,8 @@ class EntryPoint:
         else:
             # Use the config file in the default location
             # Changes to the configurations will be updated to this file
-            os.makedirs(self.DEFAULT_CONFIG_FILE_LOCATION, exist_ok=True)
-            self.config_file = self.DEFAULT_CONFIG_FILE
+            os.makedirs(self.DEFAULT_USER_CONFIG_FILE_LOCATION, exist_ok=True)
+            self.config_file = self.DEFAULT_USER_CONFIG_FILE
 
     def setup_loggers(self, logs_config_file):
 
@@ -116,7 +121,7 @@ class EntryPoint:
 
         else:
             # Use the default
-            fileConfig(self.DEFAULT_CONFIG_FILE)
+            fileConfig(self.DEFAULT_USER_CONFIG_FILE)
 
         self.logger = logging.getLogger()
 
