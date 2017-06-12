@@ -18,17 +18,23 @@ class Configurator(Thread):
         """ Associates the configurator with an organizer and sets the bind address for the service """
         super().__init__()
         self._organizer = organizer
-        self._server = SimpleXMLRPCServer(bind_address, requestHandler=SimpleXMLRPCRequestHandler, allow_none=True)
+        self._bind_address = bind_address
+        self._server = None
+
+    def start(self):
+        self._server = SimpleXMLRPCServer(self._bind_address, SimpleXMLRPCRequestHandler, allow_none=True)
         self._server.register_instance(_ConfiguratorInterface(self))
+        super().start()
 
     def run(self):
-        """ Runs the servicing waiting for new requests """
+        """ Runs the service waiting for new requests """
         self._server.serve_forever()
 
     def stop(self):
         """ Stops the service. This method should be called before exiting the application """
         self._server.shutdown()
         self._server.server_close()
+        self._server = None
 
     def set_watch_dir(self, watch_dir):
         """
