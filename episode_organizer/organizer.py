@@ -34,10 +34,20 @@ class Organizer(WatchHandler):
         self.storage_manager = storage_manager
 
         self._watch_dir_lock = threading.Lock()
+        self._storage_dir_lock = threading.Lock()
 
     @property
     def watch_dir(self):
         return self.watcher.watch_dir
+
+    @property
+    def storage_dir(self):
+        return self.storage_manager.storage_dir
+
+    @storage_dir.setter
+    def storage_dir(self, value):
+        with self._storage_dir_lock:
+            self.storage_manager.storage_dir = value
 
     def start(self):
         """ Starts the organizing service """

@@ -42,3 +42,15 @@ class _Configurator:
 
     def watch_dir(self):
         return self.organizer.watch_dir
+
+    def set_storage_dir(self, storage_dir):
+
+        try:
+            self.organizer.storage_dir = storage_dir
+
+        except FileNotFoundError as error:
+            self.logger.warning(str(error))
+            raise error
+
+    def storage_dir(self):
+        return self.organizer.storage_dir

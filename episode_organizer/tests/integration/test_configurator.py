@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from time import sleep
 from xmlrpc.client import ServerProxy, Fault
 
@@ -15,11 +15,15 @@ from episode_organizer.storage_manager import StorageManager
 class TestConfigurator:
 
     @contextmanager
-    def setup_system(self, watch_dir, storage_dir):
+    def setup_system(self, watch_dir, storage_dir, configurator_logger_mock=None):
         organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
         configurator = Configurator(organizer)
         organizer.start()
         configurator.start()
+
+        if configurator_logger_mock:
+            configurator.logger = configurator_logger_mock
+
         yield
 
         sleep(1)  # give 1 second for the watcher to be notified by the filesystem
@@ -78,3 +82,51 @@ class TestConfigurator:
 
         # The watcher detects the new file because it is still watching the same directory
         on_new_file_mock.assert_called_once_with(watch_dir.join("file.txt"))
+
+    def test_SetStorageDirToAnExistingDir_EpisodeFilesAreStoredInTheNewDir(self, tmpdir):
+
+        watch_dir = tmpdir.mkdir("watch")
+        storage_dir = tmpdir.mkdir("storage")
+        new_storage_dir = tmpdir.mkdir("new_storage")
+
+        with self.setup_system(str(watch_dir), str(storage_dir)):
+            # A client connects to the configurator
+            client = ServerProxy('http://localhost:8000', allow_none=True)
+
+            # The client tries to change the storage directory to an existing directory
+            client.set_storage_dir(str(new_storage_dir))
+
+            # Check the server changed the storage directory
+            assert client.storage_dir() == str(new_storage_dir)
+
+            # Someone creates a new episode file in the watch directory
+            watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
+
+        # And the episode file was moved into the new storage directory
+        assert new_storage_dir.join("Prison Break").join("Season 05")\
+                              .join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
+
+    def test_SetStorageDirToANonExistingDir_ClientReceivesFileNotFoundError(self, tmpdir):
+
+        watch_dir = tmpdir.mkdir("watch")
+        storage_dir = tmpdir.mkdir("storage")
+        new_storage_dir = tmpdir.join("new_storage")  # note the use of 'join': the directory is not created
+
+        configurator_logger_mock = MagicMock()
+        with self.setup_system(str(watch_dir), str(storage_dir), configurator_logger_mock):
+            # A client connects to the configurator
+            client = ServerProxy('http://localhost:8000', allow_none=True)
+
+            with pytest.raises(Fault) as exception_info:
+                # The client tries to change the storage directory to an NON-existing directory
+                client.set_storage_dir(str(new_storage_dir))
+
+            # Check that server raised FileNotFoundError and it did not change the work directory
+            assert "class 'FileNotFoundError'" in str(exception_info.value)
+            assert client.storage_dir() == str(storage_dir)
+
+            # Someone creates a new episode file in the watch directory
+            watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
+
+        # The episode file was moved into the previous storage directory
+        assert storage_dir.join("Prison Break").join("Season 05").join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
