@@ -82,6 +82,11 @@ class EntryPoint:
 
         except KeyboardInterrupt:
             self.stop_services()
+            # exit correctly
+
+        except OSError as error:
+            self.logger.error(str(error))
+            self.stop_services()
 
         except Exception:
             self.logger.exception("Caught an unexpected exception while running")
