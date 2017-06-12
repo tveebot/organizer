@@ -22,7 +22,7 @@ class TestConfigurator:
         configurator.start()
 
         if configurator_logger_mock:
-            configurator.logger = configurator_logger_mock
+            Configurator.logger = configurator_logger_mock
 
         yield
 
@@ -40,7 +40,8 @@ class TestConfigurator:
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.mkdir("new_watch")
 
-        with self.setup_system(str(watch_dir), str(storage_dir)):
+        configurator_logger_mock = MagicMock()
+        with self.setup_system(str(watch_dir), str(storage_dir), configurator_logger_mock):
 
             # A client connects to the configurator
             client = ServerProxy('http://localhost:8000', allow_none=True)
@@ -57,6 +58,10 @@ class TestConfigurator:
         # Verify that the watcher detected the new created file
         on_new_file_mock.assert_called_once_with(new_watch_dir.join("file.txt"))
 
+        # And configurator logs the change
+        configurator_logger_mock.info\
+            .assert_called_once_with("Watch directory was changed to: %s" % str(new_watch_dir))
+
     @patch.object(Organizer, 'on_new_file')
     def test_SetWatchDirToAnNonExistingDir(self, on_new_file_mock, tmpdir):
 
@@ -64,7 +69,8 @@ class TestConfigurator:
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.join("new_watch")  # note the use of 'join': the directory is not created
 
-        with self.setup_system(str(watch_dir), str(storage_dir)):
+        configurator_logger_mock = MagicMock()
+        with self.setup_system(str(watch_dir), str(storage_dir), configurator_logger_mock):
 
             # A client connects to the configurator
             client = ServerProxy('http://localhost:8000', allow_none=True)
@@ -83,13 +89,20 @@ class TestConfigurator:
         # The watcher detects the new file because it is still watching the same directory
         on_new_file_mock.assert_called_once_with(watch_dir.join("file.txt"))
 
+        # And the configurator logged a warning indicating the error
+        configurator_logger_mock.warning\
+            .assert_called_once_with("Tried changing watch directory to '%s', but that directory did not exist. "
+                                     "Kept previous watch directory" % str(new_watch_dir))
+
     def test_SetStorageDirToAnExistingDir_EpisodeFilesAreStoredInTheNewDir(self, tmpdir):
 
         watch_dir = tmpdir.mkdir("watch")
         storage_dir = tmpdir.mkdir("storage")
         new_storage_dir = tmpdir.mkdir("new_storage")
 
-        with self.setup_system(str(watch_dir), str(storage_dir)):
+        configurator_logger_mock = MagicMock()
+        with self.setup_system(str(watch_dir), str(storage_dir), configurator_logger_mock):
+
             # A client connects to the configurator
             client = ServerProxy('http://localhost:8000', allow_none=True)
 
@@ -105,6 +118,10 @@ class TestConfigurator:
         # And the episode file was moved into the new storage directory
         assert new_storage_dir.join("Prison Break").join("Season 05")\
                               .join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
+
+        # And configurator logs the change
+        configurator_logger_mock.info\
+            .assert_called_once_with("Storage directory was changed to: %s" % str(new_storage_dir))
 
     def test_SetStorageDirToANonExistingDir_ClientReceivesFileNotFoundError(self, tmpdir):
 
@@ -130,3 +147,8 @@ class TestConfigurator:
 
         # The episode file was moved into the previous storage directory
         assert storage_dir.join("Prison Break").join("Season 05").join("Prison.Break.S05E09.720p.HDTV.x264.mkv").check()
+
+        # And the configurator logged a warning indicating the error
+        configurator_logger_mock.warning\
+            .assert_called_once_with("Tried changing storage directory to '%s', but that directory did not exist. "
+                                     "Kept previous storage directory" % str(new_storage_dir))

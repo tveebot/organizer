@@ -12,6 +12,8 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
 class Configurator(Thread):
 
+    logger = logging.getLogger('configurator')
+
     def __init__(self, organizer: Organizer):
         super().__init__()
         self._server = SimpleXMLRPCServer(("localhost", 8000), requestHandler=RequestHandler, allow_none=True)
@@ -26,8 +28,6 @@ class Configurator(Thread):
 
 class _Configurator:
 
-    logger = logging.getLogger('configurator')
-
     def __init__(self, organizer: Organizer):
         self.organizer = organizer
 
@@ -35,9 +35,11 @@ class _Configurator:
 
         try:
             self.organizer.set_watch_dir(watch_dir)
+            Configurator.logger.info("Watch directory was changed to: %s" % watch_dir)
 
         except FileNotFoundError as error:
-            self.logger.warning(str(error))
+            Configurator.logger.warning("Tried changing watch directory to '%s', but that directory did not exist. "
+                                        "Kept previous watch directory" % watch_dir)
             raise error
 
     def watch_dir(self):
@@ -47,9 +49,11 @@ class _Configurator:
 
         try:
             self.organizer.storage_dir = storage_dir
+            Configurator.logger.info("Storage directory was changed to: %s" % storage_dir)
 
         except FileNotFoundError as error:
-            self.logger.warning(str(error))
+            Configurator.logger.warning("Tried changing storage directory to '%s', but that directory did not exist. "
+                                        "Kept previous storage directory" % storage_dir)
             raise error
 
     def storage_dir(self):
