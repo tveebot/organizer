@@ -123,7 +123,11 @@ class EntryPoint:
         self.organizer = Organizer(watch_dir, episode_filter, mapper, storage_manager)
 
     def setup_configurator(self):
-        self.configurator = Configurator(self.config, self.config_file, self.organizer)
+
+        address = self.config['DEFAULT']['ConfiguratorAddress']
+        port = self.config.getint('DEFAULT', 'ConfiguratorPort')
+
+        self.configurator = Configurator(self.config, self.config_file, self.organizer, bind_address=(address, port))
 
     def start_services(self):
         self.logger.info("Starting organizer service...")
