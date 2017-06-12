@@ -13,6 +13,7 @@ Options:
 import configparser
 import logging
 import os
+import signal
 import sys
 from configparser import ConfigParser
 from logging.config import fileConfig
@@ -50,6 +51,13 @@ class EntryPoint:
     configurator = None
 
     def main(self):
+
+        def stop_services(signum, frame):
+            self.stop_services()
+
+        # A terminate signal stops all services
+        signal.signal(signal.SIGTERM, stop_services)
+
         args = docopt(__doc__, version='TV Show Organizer Version 0.1')
 
         try:
