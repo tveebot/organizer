@@ -103,6 +103,27 @@ class TestEntryPoint:
 
         assert entrypoint.config['DEFAULT']['ConfiguratorAddress'] == 'default_localhost'
 
+    def test_SetupOrganizer_WatchDirectoryDoesNotExist(self, tmpdir):
+
+        entrypoint = EntryPoint()
+        entrypoint.config['DEFAULT']['WatchDirectory'] = str(tmpdir.join("watch"))
+        entrypoint.config['DEFAULT']['StorageDirectory'] = str(tmpdir.mkdir("storage"))
+
+        with pytest.raises(FileNotFoundError) as exception_info:
+            entrypoint.setup_organizer()
+
+        assert str(exception_info.value) == "Watch directory does not exist: %s" % str(tmpdir.join("watch"))
+
+    def test_SetupOrganizer_StorageDirectoryDoesNotExist(self, tmpdir):
+        entrypoint = EntryPoint()
+        entrypoint.config['DEFAULT']['WatchDirectory'] = str(tmpdir.mkdir("watch"))
+        entrypoint.config['DEFAULT']['StorageDirectory'] = str(tmpdir.join("storage"))
+
+        with pytest.raises(FileNotFoundError) as exception_info:
+            entrypoint.setup_organizer()
+
+        assert str(exception_info.value) == "Storage directory does not exist: %s" % str(tmpdir.join("storage"))
+
     def test_SetupConfigurator_ConfigDefinesLocalhostAndPort35121_NoErrorIsRaised(self):
         entrypoint = EntryPoint()
         entrypoint.config['DEFAULT']['ConfiguratorAddress'] = 'localhost'

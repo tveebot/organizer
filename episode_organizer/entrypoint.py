@@ -58,11 +58,7 @@ class EntryPoint:
             self.setup_organizer()
             self.setup_configurator()
 
-        except configparser.Error as error:
-            self.logger.error(str(error))
-            sys.exit(1)
-
-        except ValueError as error:
+        except (configparser.Error, ValueError, FileNotFoundError) as error:
             self.logger.error(str(error))
             sys.exit(1)
 
@@ -132,12 +128,10 @@ class EntryPoint:
         storage_dir = self.config['DEFAULT']['StorageDirectory']
 
         if not os.path.isdir(watch_dir):
-            self.logger.error("Watch directory does not exist: %s" % watch_dir)
-            sys.exit(1)
+            raise FileNotFoundError("Watch directory does not exist: %s" % watch_dir)
 
         if not os.path.isdir(storage_dir):
-            self.logger.error("Storage directory does not exist: %s" % storage_dir)
-            sys.exit(1)
+            raise FileNotFoundError("Storage directory does not exist: %s" % storage_dir)
 
         # Setup each component
         episode_filter = Filter()
