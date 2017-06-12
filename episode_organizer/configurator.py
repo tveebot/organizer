@@ -17,8 +17,9 @@ class Configurator(Thread):
     def __init__(self, organizer: Organizer, bind_address=("localhost", 8000)):
         """ Associates the configurator with an organizer and sets the bind address for the service """
         super().__init__()
+        self._organizer = organizer
         self._server = SimpleXMLRPCServer(bind_address, requestHandler=SimpleXMLRPCRequestHandler, allow_none=True)
-        self._server.register_instance(_Configurator(organizer))
+        self._server.register_instance(_ConfiguratorInterface(self))
 
     def run(self):
         """ Runs the servicing waiting for new requests """
@@ -29,13 +30,6 @@ class Configurator(Thread):
         self._server.shutdown()
         self._server.server_close()
 
-
-class _Configurator:
-    """ This class defines the actual interface provided to the clients """
-
-    def __init__(self, organizer: Organizer):
-        self.organizer = organizer
-
     def set_watch_dir(self, watch_dir):
         """
         Sets a new watch directory.
@@ -44,7 +38,7 @@ class _Configurator:
         :raise FileNotFoundError: If the given directory does not exist.
         """
         try:
-            self.organizer.set_watch_dir(watch_dir)
+            self._organizer.set_watch_dir(watch_dir)
             Configurator.logger.info("Watch directory was changed to: %s" % watch_dir)
 
         except FileNotFoundError as error:
@@ -54,7 +48,7 @@ class _Configurator:
 
     def watch_dir(self):
         """ Returns the current watch directory being use """
-        return self.organizer.watch_dir
+        return self._organizer.watch_dir
 
     def set_storage_dir(self, storage_dir):
         """
@@ -64,7 +58,7 @@ class _Configurator:
         :raise FileNotFoundError: If the given directory does not exist.
         """
         try:
-            self.organizer.storage_dir = storage_dir
+            self._organizer.storage_dir = storage_dir
             Configurator.logger.info("Storage directory was changed to: %s" % storage_dir)
 
         except FileNotFoundError as error:
@@ -74,4 +68,23 @@ class _Configurator:
 
     def storage_dir(self):
         """ Returns the current storage directory being use """
-        return self.organizer.storage_dir
+        return self._organizer.storage_dir
+
+
+class _ConfiguratorInterface:
+    """ This class defines the actual interface provided to the clients """
+
+    def __init__(self, configurator):
+        self.configurator = configurator
+
+    def set_watch_dir(self, watch_dir):
+        self.configurator.set_watch_dir(watch_dir)
+
+    def watch_dir(self):
+        return self.configurator.watch_dir()
+
+    def set_storage_dir(self, storage_dir):
+        self.configurator.set_storage_dir(storage_dir)
+
+    def storage_dir(self):
+        return self.configurator.storage_dir()
