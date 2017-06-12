@@ -16,6 +16,7 @@ import sys
 from configparser import ConfigParser
 from logging.config import fileConfig
 
+import re
 from docopt import docopt
 from pkg_resources import resource_filename, Requirement
 
@@ -31,6 +32,12 @@ class EntryPoint:
     DEFAULT_CONFIG_FILE_LOCATION = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
     DEFAULT_CONFIG_FILE = os.path.join(DEFAULT_CONFIG_FILE_LOCATION, "config.ini")
 
+    ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
+                            "2[0-4][0-9]|25[0-5])$")
+
+    hostname_pattern = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|"
+                                  "[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
+
     config_file = DEFAULT_CONFIG_FILE
     config = ConfigParser()
     logger = logging.getLogger()
@@ -40,10 +47,21 @@ class EntryPoint:
     def main(self):
         args = docopt(__doc__, version='TV Show Organizer Version 0.1')
 
-        self.load_configurations(config_file=args['--conf'])
-        self.setup_loggers(logs_config_file=args['--logs'])
-        self.setup_organizer()
-        self.setup_configurator()
+        try:
+            self.load_configurations(config_file=args['--conf'])
+            self.setup_loggers(logs_config_file=args['--logs'])
+            self.setup_organizer()
+            self.setup_configurator()
+
+        except ValueError as error:
+            self.logger.error(str(error))
+            sys.exit(1)
+
+        except Exception:
+            self.logger.exception("Caught an unexpected exception while setting up")
+            sys.exit(1)
+
+        # Once everything is setup, start running the service
 
         try:
             self.start_services()
@@ -53,8 +71,9 @@ class EntryPoint:
             self.stop_services()
 
         except Exception:
-            self.logger.exception("Caught an unexpected exception")
+            self.logger.exception("Caught an unexpected exception while running")
             self.stop_services()
+            sys.exit(1)
 
     def load_configurations(self, config_file):
 
@@ -125,7 +144,14 @@ class EntryPoint:
     def setup_configurator(self):
 
         address = self.config['DEFAULT']['ConfiguratorAddress']
+
+        if not self.ip_pattern.match(address) and not self.hostname_pattern.match(address):
+            raise ValueError("The address '%s' is not a valid ip or hostname" % address)
+
         port = self.config.getint('DEFAULT', 'ConfiguratorPort')
+
+        if not (0 < port < 65536):
+            raise ValueError("The port '%d' is not valid" % port)
 
         self.configurator = Configurator(self.config, self.config_file, self.organizer, bind_address=(address, port))
 
