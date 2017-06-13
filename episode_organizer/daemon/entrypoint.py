@@ -13,20 +13,20 @@ Options:
 import configparser
 import logging
 import os
+import re
 import signal
 import sys
 from configparser import ConfigParser
 from logging.config import fileConfig
 
-import re
 from docopt import docopt
+from episode_organizer.daemon.configurator import Configurator
+from episode_organizer.daemon.filter import Filter
+from episode_organizer.daemon.mapper import Mapper
+from episode_organizer.daemon.organizer import Organizer
 from pkg_resources import resource_filename, Requirement
 
-from episode_organizer.configurator import Configurator
-from episode_organizer.filter import Filter
-from episode_organizer.mapper import Mapper
-from episode_organizer.organizer import Organizer
-from episode_organizer.storage_manager import StorageManager
+from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class EntryPoint:

@@ -1,7 +1,7 @@
 import pytest
-
 from episode_organizer.episode import Episode
-from episode_organizer.storage_manager import StorageManager
+
+from episode_organizer.daemon.storage_manager import StorageManager
 from episode_organizer.tvshow import TVShow
 
 

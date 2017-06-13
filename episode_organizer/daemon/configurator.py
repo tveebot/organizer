@@ -1,9 +1,8 @@
+import logging
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCServer
 
-import logging
-
-from episode_organizer.organizer import Organizer
+from episode_organizer.daemon.organizer import Organizer
 
 
 class Configurator(Thread):

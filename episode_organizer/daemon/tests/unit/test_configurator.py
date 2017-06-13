@@ -2,10 +2,10 @@ from configparser import ConfigParser
 from unittest.mock import MagicMock
 
 import pytest
+from episode_organizer.daemon.configurator import Configurator
+from episode_organizer.daemon.organizer import Organizer
 
-from episode_organizer.configurator import Configurator
-from episode_organizer.organizer import Organizer
-from episode_organizer.storage_manager import StorageManager
+from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class TestConfigurator:

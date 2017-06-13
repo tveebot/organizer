@@ -1,13 +1,13 @@
 from contextlib import contextmanager
 from time import sleep
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
+from episode_organizer.daemon.filter import Filter
+from episode_organizer.daemon.mapper import Mapper
+from episode_organizer.daemon.organizer import Organizer
 
-from episode_organizer.filter import Filter
-from episode_organizer.mapper import Mapper
-from episode_organizer.organizer import Organizer
-from episode_organizer.storage_manager import StorageManager
+from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class TestOrganizer:
