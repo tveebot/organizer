@@ -29,7 +29,8 @@ class TestConfigClient:
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.mkdir("new_watch")
 
-        config_file = tmpdir.join("config.ini").write("")
+        config_file = tmpdir.join("config.ini")
+        config_file.write("")
         config = ConfigParser()
         config['DEFAULT']['WatchDirectory'] = str(watch_dir)
         config['DEFAULT']['StorageDirectory'] = str(storage_dir)
@@ -51,7 +52,8 @@ class TestConfigClient:
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.join("new_watch")
 
-        config_file = tmpdir.join("config.ini").write("")
+        config_file = tmpdir.join("config.ini")
+        config_file.write("")
         config = ConfigParser()
         config['DEFAULT']['WatchDirectory'] = str(watch_dir)
         config['DEFAULT']['StorageDirectory'] = str(storage_dir)
