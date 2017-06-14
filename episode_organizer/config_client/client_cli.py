@@ -17,6 +17,8 @@ Options:
 import re
 
 import logging
+
+import sys
 from docopt import docopt
 
 from episode_organizer.config_client.config_client import ConfigClient
@@ -46,11 +48,16 @@ class ClientCLI:
         if args['--verbose']:
             self.logger.setLevel(logging.DEBUG)
 
-        if args['-g']:
-            self.get_config(args['<key>'])
+        try:
+            if args['-g']:
+                self.get_config(args['<key>'])
 
-        else:  # option is -s
-            self.set_config(args['<key>'], args['<value>'])
+            else:  # option is -s
+                self.set_config(args['<key>'], args['<value>'])
+
+        except KeyError:
+            self.logger.error("The key '%s' is not a valid configuration key" % args['<key>'])
+            sys.exit(1)
 
     def setup_client(self, host, port):
 
