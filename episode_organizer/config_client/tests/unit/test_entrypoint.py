@@ -14,13 +14,14 @@ class TestEntrypoint:
         entrypoint = EntryPoint()
         entrypoint.main()
 
-        setup_client_mock.assert_called_once_with('localhost', '8000')
+        setup_client_mock.assert_called_once_with('localhost', '35121')
 
     @patch.object(EntryPoint, 'setup_client')
     def test_SetValueWithoutSpecifyingTheHostOrPort_DefaultsToLocalhostAndPort8000(self, setup_client_mock):
+
         sys.argv = ['script', '-s', 'WatchDirectory', 'watch/']
 
         entrypoint = EntryPoint()
         entrypoint.main()
 
-        setup_client_mock.assert_called_once_with('localhost', '8000')
+        setup_client_mock.assert_called_once_with('localhost', '35121')

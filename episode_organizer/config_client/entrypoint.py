@@ -9,7 +9,7 @@ Usage:
 Options:
   -h --help       Show this screen.
   --host=HOST     Hostname or ip address of the daemon [default: localhost].
-  --port=PORT     Port where the daemon is listening on [default: 8000].
+  --port=PORT     Port where the daemon is listening on [default: 35121].
   --version       Show version.
 
 """
