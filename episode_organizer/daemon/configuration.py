@@ -1,4 +1,3 @@
-import os
 from configparser import ConfigParser
 from contextlib import suppress
 
@@ -6,7 +5,10 @@ from pkg_resources import resource_filename, Requirement
 
 
 class Configuration:
-    """ The configuration class provides an interface to access and modify the current configurations of the system """
+    """
+    The configuration class provides an interface to access and modify the current configurations of the system.
+    This class is supposed to work as close to a dictionary as possible.
+    """
 
     default_config_file = resource_filename(
         Requirement.parse("episode_organizer"), 'episode_organizer/daemon/default.ini')
@@ -17,8 +19,8 @@ class Configuration:
         If the provided config file exists then the configurations from that file will be used.
         """
         self.config_file = config_file
-        self.config = ConfigParser()
-        self.config.read(self.default_config_file)
+        self._config = ConfigParser()
+        self._config.read(self.default_config_file)
 
     def __getitem__(self, key):
         """
@@ -35,9 +37,9 @@ class Configuration:
         # We want to make sure that if the file exists, then we are able to read it.
         with suppress(FileNotFoundError):
             with open(self.config_file) as file:
-                self.config.read_file(file)  # do not user read() here (see note above)
+                self._config.read_file(file)  # do not user read() here (see note above)
 
-        return self.config['DEFAULT'][key]
+        return self._config['DEFAULT'][key]
 
     def __setitem__(self, key, value):
         """
@@ -49,11 +51,37 @@ class Configuration:
         :raise OSError:             if it fails to write to the config file.
         :raise FileNotFoundError:   if it failed to create the config file because its directory does not exist.
         """
-        if key not in self.config['DEFAULT']:
-            raise KeyError
+        if key not in self._config['DEFAULT']:
+            raise KeyError("Key '%s' is not a valid" % key)
 
-        self.config['DEFAULT'][key] = value
+        self._config['DEFAULT'][key] = value
+        self._save()
+
+    def _save(self):
 
         # Update the configuration file
         with open(self.config_file, "w") as file:
-            self.config.write(file)
+            self._config.write(file)
+
+    @staticmethod
+    def from_dict(config_file, config: dict):
+        """
+        Builds a configuration instance from a dictionary with the configurations. The keys mut be valid, otherwise a
+        KeyError will be raised. The configuration is saved to the provided file. If the dictionary does not defines
+        some configuration parameter, then the default one is used.
+
+        :param config_file: the file to save configurations to.
+        :param config:      the dictionary defining the configurations.
+        :return: a new configuration instance initialized with the configurations provided in the dictionary.
+        """
+        configuration = Configuration(config_file)
+
+        for key, value in config.items():
+
+            if key not in configuration._config['DEFAULT']:
+                raise KeyError("Key '%s' is not a valid" % key)
+
+            configuration._config['DEFAULT'][key] = value
+
+        configuration._save()
+        return configuration
