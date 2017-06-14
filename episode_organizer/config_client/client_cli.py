@@ -55,10 +55,6 @@ class ClientCLI:
             else:  # option is -s
                 self.set_config(args['<key>'], args['<value>'])
 
-        except FileNotFoundError as error:
-            self.logger.error(str(error))
-            sys.exit(1)
-
         except KeyError:
             self.logger.error("The key '%s' is not a valid configuration key" % args['<key>'])
             sys.exit(1)
@@ -90,6 +86,10 @@ class ClientCLI:
             self.logger.debug("Setting value '%s' for key '%s'" % (key, value))
             self.client.set_config(key, value)
             self.logger.info("Key '%s' was set to '%s'" % (key, value))
+
+        except FileNotFoundError as error:
+            self.logger.error(str(error))
+            sys.exit(1)
 
         except OSError as error:
             self.logger.error("Failed to set directory: %s" % str(error))
