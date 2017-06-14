@@ -36,7 +36,7 @@ def test_error_ProvidesInvalidErrorCode_RaisesKeyError():
 
 def test_raise_faults_FunctionRaisesExpectedError_RaisesFaultWithCorrespondingCodeAndMessage():
 
-    @raise_faults
+    @raise_faults()
     def raising_func():
         raise FileNotFoundError("error message")
 
@@ -49,7 +49,7 @@ def test_raise_faults_FunctionRaisesExpectedError_RaisesFaultWithCorrespondingCo
 
 def test_raise_faults_FunctionDoesNotRaiseException_DoesNotRaiseException():
 
-    @raise_faults
+    @raise_faults()
     def non_raising_func():
         pass  # does not raise anything
 
@@ -57,7 +57,7 @@ def test_raise_faults_FunctionDoesNotRaiseException_DoesNotRaiseException():
 
 
 def test_raise_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
-    @raise_faults
+    @raise_faults()
     def raising_func():
         raise UnexpectedException("error message")
 
@@ -67,7 +67,7 @@ def test_raise_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
 
 def test_expect_faults_FaultWithValidCode_RaisesCorrespondingExceptionWithTheFaultMessage():
 
-    @expect_faults
+    @expect_faults()
     def raising_func():
         raise Fault(faultCode=1001, faultString="error message")
 
@@ -79,7 +79,7 @@ def test_expect_faults_FaultWithValidCode_RaisesCorrespondingExceptionWithTheFau
 
 def test_expect_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
 
-    @expect_faults
+    @expect_faults()
     def non_raising_func():
         pass  # does not raise anything
 
@@ -88,7 +88,7 @@ def test_expect_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
 
 def test_expect_faults_FunctionRaisesExceptionNotFault_RaisesTheException():
 
-    @expect_faults
+    @expect_faults()
     def non_raising_func():
         raise Exception()
 
@@ -98,7 +98,7 @@ def test_expect_faults_FunctionRaisesExceptionNotFault_RaisesTheException():
 
 def test_expect_faults_FaultWithInvalidCode_RaisesSameFaultError():
 
-    @expect_faults
+    @expect_faults()
     def raising_func():
         raise Fault(faultCode=1, faultString="error message")
 
@@ -107,3 +107,12 @@ def test_expect_faults_FaultWithInvalidCode_RaisesSameFaultError():
 
     assert exception_info.value.faultCode == 1
     assert exception_info.value.faultString == "error message"
+
+
+def test_expect_faults():
+
+    with pytest.raises(FileNotFoundError) as exception_info:
+        with expect_faults():
+            raise Fault(faultCode=1001, faultString="error message")
+
+    assert str(exception_info.value) == "error message"
