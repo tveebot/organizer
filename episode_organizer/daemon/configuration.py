@@ -29,7 +29,7 @@ class Configuration:
 
         :param key: the configuration key to obtain the value of.
         :return: the value for the given key.
-        :raise KeyError: if the given key is invalid.
+        :raise PermissionError: if the given key is invalid.
         :raise OSError:  if it fails to read the config file.
         """
         # Note: should not use read(file) below because this ignores any OS error when trying to read the file
@@ -48,14 +48,21 @@ class Configuration:
         :param key:                 configuration key to set value for.
         :param value:               value to set.
         :raise KeyError:            if the provided key is not valid.
-        :raise OSError:             if it fails to write to the config file.
-        :raise FileNotFoundError:   if it failed to create the config file because its directory does not exist.
+        :raise PermissionError: if it fails to write to the config file.
+        :raise FileNotFoundError: if it failed to create the config file because its directory does not exist.
         """
         if key not in self._config['DEFAULT']:
             raise KeyError("Key '%s' is not a valid" % key)
 
+        previous_value = self._config['DEFAULT'][key]
         self._config['DEFAULT'][key] = value
-        self._save()
+
+        try:
+            self._save()
+        except:
+            # rollback to previous value
+            self._config['DEFAULT'][key] = previous_value
+            raise
 
     def _save(self):
 

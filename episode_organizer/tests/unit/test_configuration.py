@@ -110,13 +110,17 @@ class TestConfiguration:
         with pytest.raises(KeyError):
             config['InvalidKey'] = 'some value'
 
-    def test_SetValueToValidKey_DirectoryContainingConfigFIleDoesNotExist_RaisesFileNotFoundError(self, tmpdir):
+    def test_SetValueToValidKey_DirectoryContainingConfigFileDoesNotExist_RaisesFileNotFoundErrorAndConfigNotChanged(
+            self, tmpdir):
 
         config_file = tmpdir.join("some dir").join("config.ini")
         config = Configuration(str(config_file))
+        previous_value = defaults.config['WatchDirectory']
 
         with pytest.raises(FileNotFoundError):
             config['WatchDirectory'] = 'my_watch'
+
+        assert config['WatchDirectory'] == previous_value
 
     def test_GetValueToValidKey_NoPermissionToReadConfigFile_RaisesOSError(self, tmpdir):
 
@@ -125,34 +129,35 @@ class TestConfiguration:
             "[DEFAULT]\n"
             "WatchDirectory = my_watch\n"
         )
-        config_file.chmod(mode=111)
+        config_file.chmod(mode=0o333)
         config = Configuration(str(config_file))
 
-        with pytest.raises(OSError) as exception_info:
+        with pytest.raises(PermissionError):
             value = config['WatchDirectory']
 
-        assert "Permission denied" in str(exception_info.value)
-
-    def test_SetValueToValidKey_NoPermissionToWriteToConfigFile_RaisesOSError(self, tmpdir):
+    def test_SetValueToValidKey_NoPermissionToWriteToConfigFile_RaisesPermissionErrorAndConfigNotChanged(self, tmpdir):
 
         config_file = tmpdir.join("config.ini")
         config_file.write("")
-        config_file.chmod(mode=555)
+        config_file.chmod(mode=0o555)
         config = Configuration(str(config_file))
+        previous_value = defaults.config['WatchDirectory']
 
-        with pytest.raises(OSError) as exception_info:
+        with pytest.raises(PermissionError):
             config['WatchDirectory'] = 'my_watch'
 
-        assert "Permission denied" in str(exception_info.value)
+        assert config['WatchDirectory'] == previous_value
 
-    def test_SetValueToValidKey_NoPermissionToWriteToConfigFileDirectory_RaisesOSError(self, tmpdir):
+    def test_SetValueToValidKey_NoPermissionToWriteToConfigFileDirectory_RaisesPermissionErrorAndConfigNotChanged(
+            self, tmpdir):
 
         config_dir = tmpdir.mkdir("conf")
-        config_dir.chmod(mode=555)
+        config_dir.chmod(mode=0o555)
         config_file = config_dir.join("config.ini")
         config = Configuration(str(config_file))
+        previous_value = defaults.config['WatchDirectory']
 
-        with pytest.raises(OSError) as exception_info:
+        with pytest.raises(PermissionError):
             config['WatchDirectory'] = 'my_watch'
 
-        assert "Permission denied" in str(exception_info.value)
+        assert config['WatchDirectory'] == previous_value
