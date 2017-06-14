@@ -66,5 +66,9 @@ class TestConfigClient:
 
             assert str(exception_info.value) == "New watch directory does not exist: %s" % str(new_watch_dir)
 
-    # TODO connect to a valid server
-    # TODO connection fails
+    def test_ServerIsDisconnected_RaisesConnectionRefusedError(self, tmpdir):
+
+        client = ConfigClient(server_address=('localhost', 8000))
+
+        with pytest.raises(ConnectionRefusedError):
+            client.set_config(key='WatchDirectory', value="watch/")
