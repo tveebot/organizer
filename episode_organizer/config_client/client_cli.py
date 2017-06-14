@@ -14,6 +14,8 @@ Options:
 
 """
 import re
+
+import logging
 from docopt import docopt
 
 from episode_organizer.config_client.config_client import ConfigClient
@@ -28,6 +30,9 @@ class ClientCLI:
                                   "[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
     client = None
+    logger = logging.getLogger()
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(logging.INFO)
 
     def main(self):
         args = docopt(__doc__, version='Episode Organizer: Client - Version 0.1')
@@ -38,10 +43,10 @@ class ClientCLI:
         self.client = self.setup_client(args['--host'], args['--port'])
 
         if args['-g']:
-            self.client.get_config(args['<key>'])
+            self.get_config(args['<key>'])
 
         else:  # option is -s
-            self.client.set_config(args['<key>'], args['<value>'])
+            self.set_config(args['<key>'], args['<value>'])
 
     def setup_client(self, host, port):
 
@@ -59,10 +64,17 @@ class ClientCLI:
         return ConfigClient(server_address=(host, port))
 
     def get_config(self, key):
-        self.client.get_config(key)
+
+        self.logger.debug("Obtaining value for key '%s'" % key)
+        value = self.client.get_config(key)
+        self.logger.info("%s: %s" % (key, value))
 
     def set_config(self, key, value):
+
+        self.logger.debug("Setting value '%s' for key '%s'" % (key, value))
         self.client.set_config(key, value)
+        self.logger.info("Key '%s' was set to '%s'" % (key, value))
+
 
 if __name__ == '__main__':
     ClientCLI().main()
