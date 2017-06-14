@@ -1,5 +1,4 @@
 from configparser import ConfigParser
-from contextlib import contextmanager
 
 import pytest
 
@@ -13,15 +12,19 @@ from episode_organizer.daemon.storage_manager import StorageManager
 
 class TestConfigClient:
 
-    @contextmanager
-    def setup_system(self, watch_dir, storage_dir, config, config_file):
-        organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
-        configurator = Configurator(config, config_file, organizer)
-        configurator.start()
-        yield
+    # context manager
+    class setup_system:
 
-        configurator.stop()
-        configurator.join()
+        def __init__(self, watch_dir, storage_dir, config, config_file):
+            organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
+            self.configurator = Configurator(config, config_file, organizer)
+
+        def __enter__(self):
+            self.configurator.start()
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.configurator.stop()
+            self.configurator.join()
 
     def test_SetNewWatchDir_GetWatchDirReturnNewWatchDir(self, tmpdir):
 
@@ -29,7 +32,8 @@ class TestConfigClient:
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.mkdir("new_watch")
 
-        config_file = tmpdir.join("config.ini").write("")
+        config_file = tmpdir.join("config.ini")
+        config_file.write("")
         config = ConfigParser()
         config['DEFAULT']['WatchDirectory'] = str(watch_dir)
         config['DEFAULT']['StorageDirectory'] = str(storage_dir)
@@ -51,7 +55,8 @@ class TestConfigClient:
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.join("new_watch")
 
-        config_file = tmpdir.join("config.ini").write("")
+        config_file = tmpdir.join("config.ini")
+        config_file.write("")
         config = ConfigParser()
         config['DEFAULT']['WatchDirectory'] = str(watch_dir)
         config['DEFAULT']['StorageDirectory'] = str(storage_dir)

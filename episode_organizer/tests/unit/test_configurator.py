@@ -10,7 +10,8 @@ from episode_organizer.daemon.storage_manager import StorageManager
 
 class TestConfigurator:
 
-    def configurator(self, watch_dir, storage_dir=None, config=MagicMock(), config_file=MagicMock()):
+    @staticmethod
+    def configurator(watch_dir, storage_dir=None, config=MagicMock(), config_file=MagicMock()):
 
         storage_manager = StorageManager(str(storage_dir)) if storage_dir is not None else None
 
