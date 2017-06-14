@@ -2,12 +2,13 @@
 Episode Organizer
 
 Usage:
-  episode-organizer-cli -g <key> [ --host=HOST ] [ --port=PORT ]
-  episode-organizer-cli -s <key> <value> [ --host=HOST ] [ --port=PORT ]
+  episode-organizer-cli -g <key> [ --host=HOST ] [ --port=PORT ] [ -v | --verbose ]
+  episode-organizer-cli -s <key> <value> [ --host=HOST ] [ --port=PORT ] [ -v | --verbose ]
   episode-organizer-cli (-h | --help)
 
 Options:
   -h --help       Show this screen.
+  -v --verbose    Show this screen.
   --host=HOST     Hostname or ip address of the daemon [default: localhost].
   --port=PORT     Port where the daemon is listening on [default: 35121].
   --version       Show version.
@@ -41,6 +42,9 @@ class ClientCLI:
     def run(self, args):
 
         self.client = self.setup_client(args['--host'], args['--port'])
+
+        if args['--verbose']:
+            self.logger.setLevel(logging.DEBUG)
 
         if args['-g']:
             self.get_config(args['<key>'])
