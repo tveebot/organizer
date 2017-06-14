@@ -51,6 +51,7 @@ class Watcher:
         Changes the directory being watched. Changes to the previous directory will no longer be detected.
          
         :param new_watch_dir: the new directory to be watched.
+        :raises FileNotFoundError: if the given directory does not exist.
         """
         if not os.path.isdir(new_watch_dir):
             raise FileNotFoundError("New watch directory does not exist: %s" % new_watch_dir)

@@ -64,7 +64,11 @@ class Organizer(WatchHandler):
         self.watcher.join()
 
     def set_watch_dir(self, watch_dir):
-        """ Sets the directory to look for new episode files. This method is thread safe """
+        """
+        Sets the directory to look for new episode files. This method is thread safe
+
+        :raises FileNotFoundError: if the given directory does not exist.
+        """
         with self._watch_dir_lock:
             self.watcher.change_watch_dir(watch_dir)
 
