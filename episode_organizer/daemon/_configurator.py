@@ -46,8 +46,15 @@ class Configurator(Thread):
             self._server = None
 
     def set_config(self, key, value):
-        set_method = self.set_methods[key]
-        set_method(value)
+
+        try:
+            set_method = self.set_methods[key]
+            set_method(value)
+
+        except KeyError:
+            message = "Key '%s' is invalid" % key
+            self.logger.warning(message)
+            raise KeyError(message)
 
         self._config[key] = value
 

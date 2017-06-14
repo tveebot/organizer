@@ -164,3 +164,15 @@ class TestConfigurator:
 
             with pytest.raises(FileNotFoundError):
                 configurator.set_config('StorageDirectory', "/new/storage/dir")
+
+    def test_SetInvalidKey_RaisesKeyError(self):
+
+        with self.stub_out_open():
+
+            configuration = Configuration("config.ini")
+            configurator = Configurator(configuration, organizer=MagicMock())
+
+            with pytest.raises(KeyError) as exception_info:
+                configurator.set_config('InvalidKey', "some value")
+
+            assert "Key 'InvalidKey' is invalid" in str(exception_info.value)
