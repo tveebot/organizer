@@ -1,5 +1,7 @@
 from xmlrpc.client import ServerProxy
 
+from episode_organizer.xmlrpc_errors import expect_faults
+
 
 class ConfigClient:
 
@@ -11,8 +13,8 @@ class ConfigClient:
         }
 
         self._config_get_methods = {
-            'WatchDirectory': self.get_watch_dir,
-            'StorageDirectory': self.get_storage_dir,
+            'WatchDirectory': self.watch_dir,
+            'StorageDirectory': self.storage_dir,
         }
 
         self._configurator = ServerProxy('http://%s:%s' % (server_address[0], server_address[1]), allow_none=True)
@@ -25,14 +27,18 @@ class ConfigClient:
         get_method = self._config_get_methods[key]
         return get_method()
 
-    def get_watch_dir(self, value):
-        self._configurator.set_watch_dir(value)
+    @expect_faults()
+    def watch_dir(self):
+        return self._configurator.watch_dir()
 
+    @expect_faults()
     def set_watch_dir(self, value):
         self._configurator.set_watch_dir(value)
 
-    def get_storage_dir(self, value):
-        self._configurator.set_storage_dir(value)
+    @expect_faults()
+    def storage_dir(self):
+        return self._configurator.storage_dir()
 
+    @expect_faults()
     def set_storage_dir(self, value):
         self._configurator.set_storage_dir(value)
