@@ -2,15 +2,15 @@
 Episode Organizer
 
 Usage:
-  episode-organizer-cli [ --host=<host> ] [ --port=<port> ] -g <key>
-  episode-organizer-cli [ --host=<host> ] [ --port=<port> ] -s <key> <value>
+  episode-organizer-cli [ --host=HOST ] [ --port=PORT ] -g <key>
+  episode-organizer-cli [ --host=HOST ] [ --port=PORT ] -s <key> <value>
   episode-organizer-cli (-h | --help)
 
 Options:
-  -h --help     Show this screen.
-  --host=<host> Hostname or ip address of the daemon [default: localhost].
-  --port=<port> Port where the daemon is listening on [default: 8000].
-  --version     Show version.
+  -h --help       Show this screen.
+  --host=HOST     Hostname or ip address of the daemon [default: localhost].
+  --port=PORT     Port where the daemon is listening on [default: 8000].
+  --version       Show version.
 
 """
 from docopt import docopt
