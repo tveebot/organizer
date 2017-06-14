@@ -19,7 +19,7 @@ from docopt import docopt
 from episode_organizer.config_client.config_client import ConfigClient
 
 
-class EntryPoint:
+class ClientCLI:
 
     ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
                             "2[0-4][0-9]|25[0-5])$")
@@ -65,4 +65,4 @@ class EntryPoint:
         self.client.set_config(key, value)
 
 if __name__ == '__main__':
-    EntryPoint().main()
+    ClientCLI().main()

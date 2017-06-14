@@ -1,5 +1,5 @@
-from episode_organizer.config_client.entrypoint import EntryPoint
+from episode_organizer.config_client.client_cli import ClientCLI
 
 
 def main():
-    EntryPoint().main()
+    ClientCLI().main()
