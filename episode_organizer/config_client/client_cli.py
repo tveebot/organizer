@@ -86,9 +86,14 @@ class ClientCLI:
 
     def set_config(self, key, value):
 
-        self.logger.debug("Setting value '%s' for key '%s'" % (key, value))
-        self.client.set_config(key, value)
-        self.logger.info("Key '%s' was set to '%s'" % (key, value))
+        try:
+            self.logger.debug("Setting value '%s' for key '%s'" % (key, value))
+            self.client.set_config(key, value)
+            self.logger.info("Key '%s' was set to '%s'" % (key, value))
+
+        except OSError as error:
+            self.logger.error("Failed to set directory: %s" % str(error))
+            sys.exit(1)
 
 
 if __name__ == '__main__':

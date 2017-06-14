@@ -8,6 +8,7 @@ from bidict import bidict
 
 _error_codes = bidict({
     FileNotFoundError: 1001,
+    OSError: 1002,
 })
 
 
