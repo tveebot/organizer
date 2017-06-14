@@ -9,9 +9,11 @@ setup(
     author='david',
     author_email='fialho.david@protonmail.com',
 
-    packages=find_packages(exclude=['tests', 'tests.unit', 'tests.integration']),
+    packages=find_packages(exclude=['episode_organizer.daemon.tests',
+                                    'episode_organizer.daemon.tests.integration',
+                                    'episode_organizer.daemon.tests.unit']),
 
-    install_requires=['watchdog', 'docopt'],
+    install_requires=['watchdog', 'docopt', 'bidict'],
 
     extras_require={
         'test': ['pytest'],
@@ -19,7 +21,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'episode-organizer=episode_organizer:main',
+            'episode-organizer-daemon=episode_organizer.daemon:main',
+            'episode-organizer-cli=episode_organizer.config_client:main',
         ],
     },
 

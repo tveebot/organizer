@@ -1,7 +1,6 @@
+import logging
 import os
 import shutil
-
-import logging
 
 from episode_organizer.episode import Episode
 

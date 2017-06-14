@@ -1,8 +1,9 @@
 import logging
 import os
 
-from episode_organizer.watch_handler import WatchHandler
 from watchdog.observers import Observer
+
+from episode_organizer.daemon.watch_handler import WatchHandler
 
 
 class Watcher:

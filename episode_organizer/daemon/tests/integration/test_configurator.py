@@ -1,15 +1,15 @@
 from contextlib import contextmanager
-from unittest.mock import patch, MagicMock
 from time import sleep
+from unittest.mock import patch, MagicMock
 from xmlrpc.client import ServerProxy, Fault
 
 import pytest
+from episode_organizer.daemon.configurator import Configurator
+from episode_organizer.daemon.filter import Filter
+from episode_organizer.daemon.mapper import Mapper
+from episode_organizer.daemon.organizer import Organizer
 
-from episode_organizer.configurator import Configurator
-from episode_organizer.filter import Filter
-from episode_organizer.mapper import Mapper
-from episode_organizer.organizer import Organizer
-from episode_organizer.storage_manager import StorageManager
+from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class TestConfigurator:

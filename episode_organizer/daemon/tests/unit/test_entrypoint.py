@@ -2,7 +2,7 @@ import configparser
 
 import pytest
 
-from episode_organizer import EntryPoint
+from episode_organizer.daemon import EntryPoint
 
 
 class TestEntryPoint:

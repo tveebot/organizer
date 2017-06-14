@@ -1,9 +1,9 @@
+import logging
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCServer
 
-import logging
-
-from episode_organizer.organizer import Organizer
+from episode_organizer.daemon.organizer import Organizer
+from episode_organizer.xmlrpc_errors import raise_faults
 
 
 class Configurator(Thread):
@@ -104,14 +104,18 @@ class _ConfiguratorInterface:
     def __init__(self, configurator):
         self.configurator = configurator
 
+    @raise_faults()
     def set_watch_dir(self, watch_dir):
         self.configurator.set_watch_dir(watch_dir)
 
+    @raise_faults()
     def watch_dir(self):
         return self.configurator.watch_dir()
 
+    @raise_faults()
     def set_storage_dir(self, storage_dir):
         self.configurator.set_storage_dir(storage_dir)
 
+    @raise_faults()
     def storage_dir(self):
         return self.configurator.storage_dir()

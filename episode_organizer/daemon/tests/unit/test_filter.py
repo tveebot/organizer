@@ -1,6 +1,6 @@
 import pytest
 
-from episode_organizer.filter import Filter
+from episode_organizer.daemon.filter import Filter
 
 
 class TestFilter:
