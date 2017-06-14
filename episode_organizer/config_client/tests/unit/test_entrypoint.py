@@ -1,6 +1,8 @@
 import sys
 from unittest.mock import patch
 
+import pytest
+
 from episode_organizer.config_client import EntryPoint
 
 
@@ -73,3 +75,28 @@ class TestEntrypoint:
 
         setup_client_mock.assert_called_once_with('localhost', '5000')
 
+    def test_SetupClient_WithValidHostnameAndPort_Succeeds(self):
+
+        EntryPoint().setup_client('my.host.name', '5000')
+
+    def test_SetupClient_WithInvalidHostname_RaisesValueError(self):
+
+        with pytest.raises(ValueError) as exception_info:
+
+            EntryPoint().setup_client('my:host:name', '5000')
+
+        assert str(exception_info.value) == "Hostname 'my:host:name' is not valid"
+
+    def test_SetupClient_WithInvalidIntegerPort_RaisesValueError(self):
+
+        with pytest.raises(ValueError) as exception_info:
+            EntryPoint().setup_client('my.host.name', '65555')
+
+        assert str(exception_info.value) == "Port '65555' is not valid"
+
+    def test_SetupClient_WithInvalidStringPort_RaisesValueError(self):
+
+        with pytest.raises(ValueError) as exception_info:
+            EntryPoint().setup_client('my.host.name', 'port')
+
+        assert str(exception_info.value) == "Port 'port' is not valid"
