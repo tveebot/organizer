@@ -2,8 +2,8 @@
 Episode Organizer
 
 Usage:
-  episode-organizer-cli [ --host=HOST ] [ --port=PORT ] -g <key>
-  episode-organizer-cli [ --host=HOST ] [ --port=PORT ] -s <key> <value>
+  episode-organizer-cli -g <key> [ --host=HOST ] [ --port=PORT ]
+  episode-organizer-cli -s <key> <value> [ --host=HOST ] [ --port=PORT ]
   episode-organizer-cli (-h | --help)
 
 Options:
