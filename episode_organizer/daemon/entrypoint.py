@@ -2,8 +2,8 @@
 Episode Organizer
 
 Usage:
-  episode_organizer [ --conf=<config_file> ] [ --logs=<logs_config> ]
-  episode_organizer (-h | --help)
+  episode-organizer-daemon [ --conf=<config_file> ] [ --logs=<logs_config> ]
+  episode-organizer-daemon (-h | --help)
 
 Options:
   -h --help     Show this screen.

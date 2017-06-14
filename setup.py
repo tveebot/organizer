@@ -13,7 +13,7 @@ setup(
                                     'episode_organizer.daemon.tests.integration',
                                     'episode_organizer.daemon.tests.unit']),
 
-    install_requires=['watchdog', 'docopt'],
+    install_requires=['watchdog', 'docopt', 'bidict'],
 
     extras_require={
         'test': ['pytest'],
@@ -21,7 +21,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'episode-organizer=episode_organizer:main',
+            'episode-organizer-daemon=episode_organizer.daemon:main',
+            'episode-organizer-cli=episode_organizer.config_client:main',
         ],
     },
 
