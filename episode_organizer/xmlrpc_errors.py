@@ -47,3 +47,27 @@ def raise_faults(func):
 
     return exception_to_fault
 
+
+def expect_faults(func):
+    """
+    This is supposed to be used as a decorator.
+    All the Fault exceptions raised by the decorated function are converted to the corresponding errors based on the
+    fault code. If the fault code is included in the 'error_codes' list, then the corresponding exception is
+    raised with the error message included in the fault string. Otherwise, the Fault exception is re-raised. If the
+    function raises an exception other than a Fault, then this exception is passed through.
+    """
+    @wraps(func)
+    def fault_to_exception(*args, **kwargs):
+
+        try:
+            return func(*args, **kwargs)
+        except Fault as fault:
+
+            try:
+                exception = error(fault.faultCode)
+            except KeyError:
+                raise fault
+
+            raise exception(fault.faultString)
+
+    return fault_to_exception

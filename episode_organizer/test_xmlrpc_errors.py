@@ -2,7 +2,7 @@ from xmlrpc.client import Fault
 
 import pytest
 
-from episode_organizer.xmlrpc_errors import error_code, error, raise_faults
+from episode_organizer.xmlrpc_errors import error_code, error, raise_faults, expect_faults
 
 
 class UnexpectedException(Exception):
@@ -43,8 +43,8 @@ def test_raise_faults_FunctionRaisesExpectedError_RaisesFaultWithCorrespondingCo
     with pytest.raises(Fault) as exception_info:
         raising_func()
 
-    exception_info.value.faultCode = 1001
-    exception_info.value.faultString = "error message"
+    assert exception_info.value.faultCode == 1001
+    assert exception_info.value.faultString == "error message"
 
 
 def test_raise_faults_FunctionDoesNotRaiseException_DoesNotRaiseException():
@@ -63,3 +63,47 @@ def test_raise_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
 
     with pytest.raises(UnexpectedException):
         raising_func()
+
+
+def test_expect_faults_FaultWithValidCode_RaisesCorrespondingExceptionWithTheFaultMessage():
+
+    @expect_faults
+    def raising_func():
+        raise Fault(faultCode=1001, faultString="error message")
+
+    with pytest.raises(FileNotFoundError) as exception_info:
+        raising_func()
+
+    assert str(exception_info.value) == "error message"
+
+
+def test_expect_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
+
+    @expect_faults
+    def non_raising_func():
+        pass  # does not raise anything
+
+    non_raising_func()
+
+
+def test_expect_faults_FunctionRaisesExceptionNotFault_RaisesTheException():
+
+    @expect_faults
+    def non_raising_func():
+        raise Exception()
+
+    with pytest.raises(Exception):
+        non_raising_func()
+
+
+def test_expect_faults_FaultWithInvalidCode_RaisesSameFaultError():
+
+    @expect_faults
+    def raising_func():
+        raise Fault(faultCode=1, faultString="error message")
+
+    with pytest.raises(Fault) as exception_info:
+        raising_func()
+
+    assert exception_info.value.faultCode == 1
+    assert exception_info.value.faultString == "error message"
