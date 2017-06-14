@@ -55,6 +55,10 @@ class ClientCLI:
             else:  # option is -s
                 self.set_config(args['<key>'], args['<value>'])
 
+        except FileNotFoundError as error:
+            self.logger.error(str(error))
+            sys.exit(1)
+
         except KeyError:
             self.logger.error("The key '%s' is not a valid configuration key" % args['<key>'])
             sys.exit(1)
