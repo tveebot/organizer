@@ -45,8 +45,7 @@ class Organizer(WatchHandler):
     def storage_dir(self):
         return self.storage_manager.storage_dir
 
-    @storage_dir.setter
-    def storage_dir(self, value):
+    def set_storage_dir(self, value):
         with self._storage_dir_lock:
             self.storage_manager.storage_dir = value
 

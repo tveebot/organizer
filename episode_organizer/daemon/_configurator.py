@@ -25,7 +25,8 @@ class Configurator(Thread):
         self._server = None
 
         self.set_methods = {
-            'WatchDirectory': self.set_watch_dir
+            'WatchDirectory': self.set_watch_dir,
+            'StorageDirectory': self.set_storage_dir,
         }
 
     def start(self):
@@ -61,6 +62,15 @@ class Configurator(Thread):
             raise FileNotFoundError(message)
 
         self._organizer.set_watch_dir(watch_dir)
+
+    def set_storage_dir(self, storage_dir):
+
+        if not os.path.isdir(storage_dir):
+            message = "Failed to change storage directory: directory '%s' does not exist" % storage_dir
+            self.logger.warning(message)
+            raise FileNotFoundError(message)
+
+        self._organizer.set_storage_dir(storage_dir)
 
 
 class _ConfiguratorInterface:
