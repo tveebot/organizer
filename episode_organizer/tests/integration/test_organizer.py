@@ -1,12 +1,11 @@
-from contextlib import contextmanager
 from time import sleep
 from unittest.mock import MagicMock
 
 import pytest
+
 from episode_organizer.daemon.filter import Filter
 from episode_organizer.daemon.mapper import Mapper
 from episode_organizer.daemon.organizer import Organizer
-
 from episode_organizer.daemon.storage_manager import StorageManager
 
 
@@ -20,23 +19,28 @@ class TestOrganizer:
     def storage_dir(self, tmpdir):
         return tmpdir.mkdir("storage")
 
-    @contextmanager
-    def organizer(self, watch_dir, filter, mapper, storage_manager, logger_mock=None):
-        organizer = Organizer(watch_dir, filter, mapper, storage_manager)
-        organizer.start()
+    class setup_organizer:
 
-        if logger_mock:
-            organizer.logger = logger_mock
+        def __init__(self, watch_dir, filter, mapper, storage_manager, logger_mock=None):
+            self.organizer = Organizer(watch_dir, filter, mapper, storage_manager)
+            self.logger_mock = logger_mock
 
-        yield organizer
+        def __enter__(self):
+            self.organizer.start()
+            if self.logger_mock:
+                self.organizer.logger = self.logger_mock
 
-        sleep(1)  # give a moment for the watcher to detect changes to the filesystem
-        organizer.stop()
-        organizer.join()
+            return self.organizer
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            sleep(1)  # give a moment for the watcher to detect changes to the filesystem
+
+            self.organizer.stop()
+            self.organizer.join()
 
     def test_organize_DownloadedAnEpisodeFile(self, watch_dir, storage_dir):
 
-        with self.organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir))):
+        with self.setup_organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir))):
 
             # New episode file was downloaded
             watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
@@ -47,7 +51,7 @@ class TestOrganizer:
 
     def test_organize_DownloadEpisodeInsideADirectory(self, watch_dir, storage_dir, tmpdir):
 
-        with self.organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir))):
+        with self.setup_organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir))):
 
             # New episode file was downloaded
             other_dir = tmpdir.mkdir("Prison.Break.S05E09.720p.HDTV.x264-KILLERS[rarbg]")
@@ -64,7 +68,7 @@ class TestOrganizer:
         storage_dir.mkdir("Prison Break").mkdir("Season 05").join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
 
         logger_mock = MagicMock()
-        with self.organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)), logger_mock):
+        with self.setup_organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)), logger_mock):
 
             watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
 
@@ -79,7 +83,7 @@ class TestOrganizer:
         filter_mock.get_episode_file.side_effect = OSError("Permission denied")
 
         logger_mock = MagicMock()
-        with self.organizer(str(watch_dir), filter_mock, Mapper(), StorageManager(str(storage_dir)), logger_mock):
+        with self.setup_organizer(str(watch_dir), filter_mock, Mapper(), StorageManager(str(storage_dir)), logger_mock):
 
             watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
 
@@ -93,7 +97,7 @@ class TestOrganizer:
         storage_manager_mock.store.side_effect = OSError("Permission denied")
 
         logger_mock = MagicMock()
-        with self.organizer(str(watch_dir), Filter(), Mapper(), storage_manager_mock, logger_mock):
+        with self.setup_organizer(str(watch_dir), Filter(), Mapper(), storage_manager_mock, logger_mock):
 
             watch_dir.join("Prison.Break.S05E09.720p.HDTV.x264.mkv").write("")
 
@@ -104,7 +108,7 @@ class TestOrganizer:
     def test_organize_NewFileIsNotAVideoFile_FilesKeptInWatchDir(self, watch_dir, storage_dir):
 
         logger_mock = MagicMock()
-        with self.organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)), logger_mock):
+        with self.setup_organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)), logger_mock):
 
             watch_dir.join("file.txt").write("")
 
@@ -116,7 +120,7 @@ class TestOrganizer:
     def test_organize_NewDirectoryDoesNotContainAnyVideoFile_FilesKeptInWatchDir(self, watch_dir, storage_dir, tmpdir):
 
         logger_mock = MagicMock()
-        with self.organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)), logger_mock):
+        with self.setup_organizer(str(watch_dir), Filter(), Mapper(), StorageManager(str(storage_dir)), logger_mock):
 
             # New episode file was downloaded
             other_dir = tmpdir.mkdir("other dir")

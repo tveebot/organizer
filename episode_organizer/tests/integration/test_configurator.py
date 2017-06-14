@@ -1,39 +1,42 @@
-from contextlib import contextmanager
 from time import sleep
 from unittest.mock import patch, MagicMock
 from xmlrpc.client import ServerProxy, Fault
 
 import pytest
+
 from episode_organizer.daemon.configurator import Configurator
 from episode_organizer.daemon.filter import Filter
 from episode_organizer.daemon.mapper import Mapper
 from episode_organizer.daemon.organizer import Organizer
-
 from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class TestConfigurator:
 
-    @contextmanager
-    def setup_system(self, watch_dir, storage_dir, configurator_logger_mock=None):
-        organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
+    class setup_system:
 
-        # Note config and config_file are mock objects - the goal is to ignore the configs
-        configurator = Configurator(config=MagicMock(), config_file=MagicMock(), organizer=organizer)
-        organizer.start()
-        configurator.start()
+        def __init__(self, watch_dir, storage_dir, configurator_logger_mock=None):
+            self.organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
+            self.configurator = Configurator(config=MagicMock(), config_file=MagicMock(), organizer=self.organizer)
+            self.configurator_logger_mock = configurator_logger_mock
 
-        if configurator_logger_mock:
-            Configurator.logger = configurator_logger_mock
+        def __enter__(self):
+            self.organizer.start()
+            self.configurator.start()
 
-        yield
+            if self.configurator_logger_mock:
+                Configurator.logger = self.configurator_logger_mock
 
-        sleep(1)  # give 1 second for the watcher to be notified by the filesystem
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.configurator.stop()
+            self.configurator.join()
 
-        configurator.stop()
-        configurator.join()
-        organizer.stop()
-        organizer.join()
+            sleep(1)  # give 1 second for the watcher to be notified by the filesystem
+
+            self.configurator.stop()
+            self.configurator.join()
+            self.organizer.stop()
+            self.organizer.join()
 
     @patch.object(Organizer, 'on_new_file')
     def test_SetWatchDirToExistingDir_ChangesToNewDirAreDetected(self, on_new_file_mock, tmpdir):

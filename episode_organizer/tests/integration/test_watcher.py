@@ -18,17 +18,21 @@ class TestWatcher:
         handler_mock.base_handler = _BaseHandler(handler_mock)
         return handler_mock
 
-    @contextmanager
-    def setup_watcher(self, watch_dir, watch_handler):
-        watcher = Watcher(watch_dir)
-        watcher.add_handler(watch_handler)
-        watcher.start()
-        yield watcher
+    class setup_watcher:
 
-        sleep(1)  # Give some time for the watcher to receive information from the filesystem
+        def __init__(self, watch_dir, watch_handler):
+            self.watcher = Watcher(watch_dir)
+            self.watcher.add_handler(watch_handler)
 
-        watcher.stop()
-        watcher.join()
+        def __enter__(self):
+            self.watcher.start()
+            return self.watcher
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            sleep(1)  # Give some time for the watcher to receive information from the filesystem
+
+            self.watcher.stop()
+            self.watcher.join()
 
     def test_FileIsCreated_NewFileIsDetected(self, watch_handler_mock, tmpdir):
 
