@@ -54,7 +54,7 @@ class Daemon:
         # A terminate signal stops all services
         signal.signal(signal.SIGTERM, stop_services)
 
-        args = docopt(__doc__, version='TV Show Organizer Version 0.1')
+        args = docopt(__doc__, version='TV Show Organizer: Daemon Version 0.2')
 
         try:
             self.load_configurations(user_config_file=args['--conf'])

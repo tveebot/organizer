@@ -38,7 +38,7 @@ class ClientCLI:
     logger.setLevel(logging.INFO)
 
     def main(self):
-        args = docopt(__doc__, version='Episode Organizer: Client - Version 0.1')
+        args = docopt(__doc__, version='Episode Organizer: CLI - Version 0.2')
         self.run(args)
 
     def run(self, args):
