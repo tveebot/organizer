@@ -2,6 +2,7 @@ import logging
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCServer
 
+from episode_organizer.daemon.configuration import Configuration
 from episode_organizer.daemon.organizer import Organizer
 from episode_organizer.xmlrpc_errors import raise_faults
 
@@ -14,88 +15,91 @@ class Configurator(Thread):
 
     logger = logging.getLogger('configurator')
 
-    def __init__(self, config, config_file, organizer: Organizer, bind_address=("localhost", 8000)):
+    def __init__(self, config_file, config: Configuration, organizer: Organizer, bind_address=("localhost", 35121)):
         """ Associates the configurator with an organizer and sets the bind address for the service """
         super().__init__()
-        self._config = config
         self.config_file = config_file
+        self._config = config
         self._organizer = organizer
         self._bind_address = bind_address
         self._server = None
 
+        self.set_methods = {
+            'WatchDirectory': self.set_watch_dir,
+            'StorageDirectory': self.set_storage_dir,
+        }
+
     def start(self):
+        """ Starts the configurator service. Binds to the given address and starts listening for requests """
         self._server = SimpleXMLRPCServer(self._bind_address, SimpleXMLRPCRequestHandler, allow_none=True)
         self._server.register_instance(_ConfiguratorInterface(self))
         super().start()
 
     def run(self):
-        """ Runs the service waiting for new requests """
+        """ Runs the service """
         self._server.serve_forever()
 
     def stop(self):
-        """ Stops the service. This method should be called before exiting the application """
+        """ Stops the service. This method should always be called before exiting the application """
         if self._server:
             self._server.shutdown()
             self._server.server_close()
             self._server = None
 
-    def set_watch_dir(self, watch_dir):
-        """
-        Sets a new watch directory. The configuration file is also updated if and only if the change is valid.
-
-        :param watch_dir: the directory to set as watch directory.
-        :raise FileNotFoundError: If the given directory does not exist.
+    def set_config(self, key, value):
+        """ 
+        Sets a new value for a configuration key. Provided the given configuration key is valid and the given value is 
+        valid for that key, the entire system is updated to use the new value. This method is exception safe, which 
+        means that if any exception is raised, then the configuration and the system are kept in the previous state. 
         """
         try:
-            # Update the organizer before updating the config file
-            # This way the config file is not updated if the new directory is not valid
+            # If the key is not contained in the 'set_methods' dict, then it is not valid or is not editable
+            # Do not use the configuration getitem method to test if a key is valid because it will not raise a
+            # key error for non-editable keys
+            set_method = self.set_methods[key]
+
+        except KeyError:
+            message = "Key '%s' is invalid" % key
+            self.logger.warning(message)
+            raise KeyError(message)
+
+        previous_value = self._config[key]
+        self._config.update(self.config_file, key, value)
+
+        try:
+            set_method(value)
+
+        except:
+            # Rollback configuration value
+            self._config.update(self.config_file, key, previous_value)
+            raise
+
+    def get_config(self, key):
+        """ 
+        Returns the current value for the given key if the kye is valid.  
+        
+        :return: the current value for the given configuration key
+        :raises KeyError: if the given key is invalid.
+        """
+        return self._config[key]
+
+    def set_watch_dir(self, watch_dir):
+
+        try:
             self._organizer.set_watch_dir(watch_dir)
 
-            # Update the config file
-            self._config['DEFAULT']['WatchDirectory'] = watch_dir
-            with open(self.config_file, "w") as file:
-                self._config.write(file)
-                Configurator.logger.debug("WatchDirectory parameter was updated in the config file")
-
-            Configurator.logger.info("Watch directory was changed to: %s" % watch_dir)
-
-        except FileNotFoundError as error:
-            Configurator.logger.warning("Tried changing watch directory to '%s', but that directory did not exist. "
-                                        "Kept previous watch directory" % watch_dir)
-            raise error
-
-    def watch_dir(self):
-        """ Returns the current watch directory being use """
-        return self._organizer.watch_dir
+        except (FileNotFoundError, OSError):
+            self.logger.error("Failed to set new watch directory: directory '%s' does not exist", watch_dir)
+            raise
 
     def set_storage_dir(self, storage_dir):
-        """
-        Sets a new storage directory. The configuration file is also updated if and only if the change is valid.
 
-        :param storage_dir: the directory to set as storage directory.
-        :raise FileNotFoundError: If the given directory does not exist.
-        """
         try:
-            # Update the organizer before updating the config file
-            # This way the config file is not updated if the new directory is not valid
-            self._organizer.storage_dir = storage_dir
+            self._organizer.set_storage_dir(storage_dir)
 
-            # Update the config file
-            self._config['DEFAULT']['StorageDirectory'] = storage_dir
-            with open(self.config_file, "w") as file:
-                self._config.write(file)
-                Configurator.logger.debug("StorageDirectory parameter was updated in the config file")
-
-            Configurator.logger.info("Storage directory was changed to: %s" % storage_dir)
-
-        except FileNotFoundError as error:
-            Configurator.logger.warning("Tried changing storage directory to '%s', but that directory did not exist. "
-                                        "Kept previous storage directory" % storage_dir)
-            raise error
-
-    def storage_dir(self):
-        """ Returns the current storage directory being use """
-        return self._organizer.storage_dir
+        except (FileNotFoundError, OSError):
+            self.logger.error("Failed to set new storage directory: directory '%s' does not exist", storage_dir)
+            raise
 
 
 class _ConfiguratorInterface:
@@ -105,17 +109,9 @@ class _ConfiguratorInterface:
         self.configurator = configurator
 
     @raise_faults()
-    def set_watch_dir(self, watch_dir):
-        self.configurator.set_watch_dir(watch_dir)
+    def set_config(self, key, value):
+        self.configurator.set_config(key, value)
 
     @raise_faults()
-    def watch_dir(self):
-        return self.configurator.watch_dir()
-
-    @raise_faults()
-    def set_storage_dir(self, storage_dir):
-        self.configurator.set_storage_dir(storage_dir)
-
-    @raise_faults()
-    def storage_dir(self):
-        return self.configurator.storage_dir()
+    def get_config(self, key):
+        return self.configurator.get_config(key)

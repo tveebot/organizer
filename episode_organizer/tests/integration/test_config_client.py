@@ -1,7 +1,7 @@
 import pytest
 
 from episode_organizer.config_client.config_client import ConfigClient
-from episode_organizer.daemon._configurator import Configurator
+from episode_organizer.daemon.configurator import Configurator
 from episode_organizer.daemon.configuration import Configuration
 from episode_organizer.daemon.filter import Filter
 from episode_organizer.daemon.mapper import Mapper

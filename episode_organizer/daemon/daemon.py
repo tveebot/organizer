@@ -20,7 +20,7 @@ from logging.config import fileConfig
 
 from docopt import docopt
 
-from episode_organizer.daemon._configurator import Configurator
+from episode_organizer.daemon.configurator import Configurator
 from episode_organizer.daemon.configuration import Configuration
 from episode_organizer.daemon.filter import Filter
 from episode_organizer.daemon.mapper import Mapper
