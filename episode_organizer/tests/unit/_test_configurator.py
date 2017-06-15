@@ -4,6 +4,7 @@ import pytest
 
 from episode_organizer.daemon._configurator import Configurator
 from episode_organizer.daemon.configuration import Configuration
+from episode_organizer.tests import defaults
 
 
 # noinspection PyTypeChecker
@@ -168,3 +169,17 @@ class TestConfigurator:
         assert "Key 'InvalidKey' is invalid" in str(exception_info.value)
 
         organizer_mock.set_storage_dir.assert_not_called()
+
+    def test_SetValueForKeyThatCanNotBeEdited_RaisesKeyError(self, config_file):
+
+        config = Configuration()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, config, organizer_mock)
+
+        with pytest.raises(KeyError) as exception_info:
+            configurator.set_config('ConfiguratorPort', '8000')
+
+        assert "Key 'ConfiguratorPort' is invalid" in str(exception_info.value)
+
+        organizer_mock.set_storage_dir.assert_not_called()
+        assert config['ConfiguratorPort'] == defaults.config['ConfiguratorPort']

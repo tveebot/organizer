@@ -2,5 +2,5 @@ config = {
     'WatchDirectory': 'watch/',
     'StorageDirectory': 'storage/',
     'ConfiguratorAddress': 'localhost',
-    'ConfiguratorPort': 35121,
+    'ConfiguratorPort': '35121',
 }

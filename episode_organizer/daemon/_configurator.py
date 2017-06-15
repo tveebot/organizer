@@ -53,16 +53,20 @@ class Configurator(Thread):
         means that if any exception is raised, then the configuration and the system are kept in the previous state. 
         """
         try:
-            previous_value = self._config[key]
-            self._config.update(self.config_file, key, value)
+            # If the key is not contained in the 'set_methods' dict, then it is not valid or is not editable
+            # Do not use the configuration getitem method to test if a key is valid because it will not raise a
+            # key error for non-editable keys
+            set_method = self.set_methods[key]
 
         except KeyError:
             message = "Key '%s' is invalid" % key
             self.logger.warning(message)
             raise KeyError(message)
 
+        previous_value = self._config[key]
+        self._config.update(self.config_file, key, value)
+
         try:
-            set_method = self.set_methods[key]
             set_method(value)
 
         except:
