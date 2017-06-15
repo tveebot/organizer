@@ -1,263 +1,185 @@
-from configparser import ConfigParser
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+
 from episode_organizer.daemon.configurator import Configurator
-from episode_organizer.daemon.organizer import Organizer
+from episode_organizer.daemon.configuration import Configuration
+from episode_organizer.tests import defaults
 
-from episode_organizer.daemon.storage_manager import StorageManager
 
-
+# noinspection PyTypeChecker
 class TestConfigurator:
 
-    @staticmethod
-    def configurator(watch_dir, storage_dir=None, config=MagicMock(), config_file=MagicMock()):
+    @pytest.fixture
+    def config_file(self, tmpdir):
+        return str(tmpdir.join("config.ini"))
 
-        storage_manager = StorageManager(str(storage_dir)) if storage_dir is not None else None
+    def test_SetWatchDir_ToExistingDir_WatchDirIsSetToNewDir(self, tmpdir, config_file):
 
-        # noinspection PyTypeChecker
-        organizer = Organizer(str(watch_dir), None, None, storage_manager)
-
-        return Configurator(config, config_file, organizer)
-
-    def test_SetWatchDirToExistingDir_WatchDirWasSetToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
         new_watch_dir = tmpdir.mkdir("new_watch")
-        configurator = self.configurator(str(watch_dir))
+        configuration = Configuration.from_dict({
+            'WatchDirectory': "/watch/dir"
+        })
+        configurator = Configurator(config_file, configuration, organizer=MagicMock())
 
-        configurator.set_watch_dir(str(new_watch_dir))
+        configurator.set_config('WatchDirectory', str(new_watch_dir))
 
-        assert configurator.watch_dir() == str(new_watch_dir)
+        assert configurator.get_config('WatchDirectory') == str(new_watch_dir)
 
-    def test_SetWatchDirToNonExistingDir_RaiseFileNotFoundAndKeepsWatchDir(self, tmpdir):
+    def test_SetWatchDir_ToExistingDir_OrganizerIsInformedOfTheChange(self, tmpdir, config_file):
 
-        watch_dir = tmpdir.mkdir("watch")
-        new_watch_dir = tmpdir.join("new_watch")
-        configurator = self.configurator(str(watch_dir))
+        new_watch_dir = tmpdir.mkdir("new_watch")
+        configuration = Configuration.from_dict({
+            'WatchDirectory': "/watch/dir"
+        })
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
+
+        configurator.set_config('WatchDirectory', str(new_watch_dir))
+
+        organizer_mock.set_watch_dir.assert_called_once_with(str(new_watch_dir))
+
+    def test_SetWatchDir_ToNonExistingDir_WatchDirIsKept(self, config_file):
+
+        configuration = Configuration.from_dict({
+            'WatchDirectory': "/watch/dir"
+        })
+        # When the directory does not exist the organizer raises FileNotFoundError
+        organizer_stub = MagicMock()
+        organizer_stub.set_watch_dir.side_effect = FileNotFoundError()
+        configurator = Configurator(config_file, configuration, organizer_stub)
 
         with pytest.raises(FileNotFoundError):
-            configurator.set_watch_dir(str(new_watch_dir))
+            configurator.set_config('WatchDirectory', "/new/watch/dir")
 
-        assert configurator.watch_dir() == str(watch_dir)
+        assert configurator.get_config('WatchDirectory') == "/watch/dir"
 
-    def test_SetStorageDirToExistingDir_StorageDirWasSetToNewDir(self, tmpdir):
+    @patch.object(Configuration, '__setitem__')
+    def test_SetWatchDir_FailsToAccessConfigFile_RaisesOSErrorOrganizerIsNotChanged(
+            self, config_setitem_stub, config_file):
 
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_storage_dir = tmpdir.mkdir("new_storage")
-        configurator = self.configurator(str(watch_dir), str(storage_dir))
+        configuration = Configuration.from_dict({
+            'WatchDirectory': "/watch/dir"
+        })
+        config_setitem_stub.side_effect = OSError()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
 
-        configurator.set_storage_dir(str(new_storage_dir))
+        with pytest.raises(OSError):
+            configurator.set_config('WatchDirectory', "/new/watch/dir")
 
-        assert configurator.storage_dir() == str(new_storage_dir)
+        organizer_mock.set_watch_dir.assert_not_called()
 
-    def test_SetStorageDirToNonExistingDir_RaiseFileNotFoundAndKeepsStorageDir(self, tmpdir):
+    @patch.object(Configuration, '__setitem__')
+    def test_SetWatchDir_FailsToCreateConfigFile_RaisesFileNotFoundError(self, config_setitem_stub, config_file):
 
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_storage_dir = tmpdir.join("new_storage")
-        configurator = self.configurator(str(watch_dir), str(storage_dir))
-
-        with pytest.raises(FileNotFoundError):
-            configurator.set_storage_dir(str(new_storage_dir))
-
-        assert configurator.storage_dir() == str(storage_dir)
-
-    def test_SetNewWatchDir_ConfigDoesNotExist_FileIsCreatedAndWatchDirectoryParamIsSetToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_watch_dir = tmpdir.mkdir("new_watch")
-
-        # Using the default config file
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
-
-        # Non-default config file does not exist yet
-        config_file = tmpdir.join("config.ini")
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config, str(config_file))
-
-        configurator.set_watch_dir(str(new_watch_dir))
-
-        loaded_config = ConfigParser()
-        loaded_config.read(str(config_file))
-
-        # The config file was updated to the new watch directory
-        assert loaded_config['DEFAULT']['WatchDirectory'] == str(new_watch_dir)
-
-    def test_SetNewWatchDir_ConfigExistsButDoesNotDefineWatchDirectory_WatchDirectoryParamIsSetToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_watch_dir = tmpdir.mkdir("new_watch")
-
-        # Using the default config file
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
-
-        # Config file currently does not define the WatchDirectory parameter - the default is being used
-        config_file = tmpdir.join("config.ini")
-        config_file.write("[DEFAULT]\n"
-                          "StorageDirectory = %s" % str(storage_dir))
-        config.read(str(config_file))
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config, str(config_file))
-
-        configurator.set_watch_dir(str(new_watch_dir))
-
-        loaded_config = ConfigParser()
-        loaded_config.read(str(config_file))
-
-        # The config file was updated to the new watch directory
-        assert loaded_config['DEFAULT']['WatchDirectory'] == str(new_watch_dir)
-
-    def test_SetNewStorageDir_ConfigDoesNotExist_FileIsCreatedAndStorageDirectoryParamIsSetToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_storage_dir = tmpdir.mkdir("new_storage")
-
-        # Using the default config file
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
-
-        # Non-default config file does not exist yet
-        config_file = tmpdir.join("config.ini")
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config, str(config_file))
-
-        configurator.set_storage_dir(str(new_storage_dir))
-
-        loaded_config = ConfigParser()
-        loaded_config.read(str(config_file))
-
-        # The config file was updated to the new storage directory
-        assert loaded_config['DEFAULT']['StorageDirectory'] == str(new_storage_dir)
-
-    def test_SetNewStorageDir_ConfigExistsButDoesNotDefineStorageDir_StorageDirectoryParamIsSetToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_storage_dir = tmpdir.mkdir("new_storage")
-
-        # Using the default config file
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
-
-        # Config file currently does not define the WatchDirectory parameter - the default is being used
-        config_file = tmpdir.join("config.ini")
-        config_file.write("[DEFAULT]\n"
-                          "WatchDirectory = %s" % str(watch_dir))
-        config.read(str(config_file))
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config, str(config_file))
-
-        configurator.set_storage_dir(str(new_storage_dir))
-
-        loaded_config = ConfigParser()
-        loaded_config.read(str(config_file))
-
-        # The config file was updated to the new storage directory
-        assert loaded_config['DEFAULT']['StorageDirectory'] == str(new_storage_dir)
-
-    def test_SetNewWatchDir_ConfigAlreadyDefinesSomeWatchDir_WatchDirectoryParamIsUpdatedToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_watch_dir = tmpdir.mkdir("new_watch")
-
-        # Using the default config file
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
-
-        # Config file currently defines the WatchDirectory parameter - the default is being used
-        config_file = tmpdir.join("config.ini")
-        config_file.write("[DEFAULT]\n"
-                          "WatchDirectory = %s"
-                          "StorageDirectory = %s\n" % (str(watch_dir), str(storage_dir)))
-        config.read(str(config_file))
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config, str(config_file))
-
-        configurator.set_watch_dir(str(new_watch_dir))
-
-        loaded_config = ConfigParser()
-        loaded_config.read(str(config_file))
-
-        # The config file was updated to the new watch directory
-        assert loaded_config['DEFAULT']['WatchDirectory'] == str(new_watch_dir)
-
-    def test_SetNewStorageDir_ConfigAlreadyDefinesSomeStorageDir_StorageDirectoryParamIsUpdatedToNewDir(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_storage_dir = tmpdir.mkdir("new_storage")
-
-        # Using the default config file
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
-
-        # Config file currently defines the WatchDirectory parameter - the default is being used
-        config_file = tmpdir.join("config.ini")
-        config_file.write("[DEFAULT]\n"
-                          "WatchDirectory = %s"
-                          "StorageDirectory = %s\n" % (str(watch_dir), str(storage_dir)))
-        config.read(str(config_file))
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config, str(config_file))
-
-        configurator.set_storage_dir(str(new_storage_dir))
-
-        loaded_config = ConfigParser()
-        loaded_config.read(str(config_file))
-
-        # The config file was updated to the new storage directory
-        assert loaded_config['DEFAULT']['StorageDirectory'] == str(new_storage_dir)
-
-    def test_SetWatchDirToNonExistingDir_ConfigWasNotUpdated(self, tmpdir):
-
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_watch_dir = tmpdir.join("new_watch")
-
-        config_file = tmpdir.join("config.ini")
-        config_mock = MagicMock()
-
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config_mock, str(config_file))
+        configuration = Configuration.from_dict({
+            'WatchDirectory': "/watch/dir"
+        })
+        config_setitem_stub.side_effect = FileNotFoundError()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
 
         with pytest.raises(FileNotFoundError):
-            configurator.set_watch_dir(str(new_watch_dir))
+            configurator.set_config('WatchDirectory', "/new/watch/dir")
 
-        config_mock.write.assert_not_called()
+        organizer_mock.set_watch_dir.assert_not_called()
 
-    def test_SetStorageDirToNonExistingDir_ConfigWasNotUpdated(self, tmpdir):
+    def test_SetStorageDir_ToExistingDir_StorageDirIsSetToNewDir(self, tmpdir, config_file):
 
-        watch_dir = tmpdir.mkdir("watch")
-        storage_dir = tmpdir.mkdir("storage")
-        new_storage_dir = tmpdir.join("new_storage")
+        new_storage_dir = tmpdir.mkdir("new_storage")
 
-        config_file = tmpdir.join("config.ini")
-        config_mock = MagicMock()
+        configuration = Configuration.from_dict({
+            'StorageDirectory': "/storage/dir"
+        })
+        configurator = Configurator(config_file, configuration, organizer=MagicMock())
 
-        # noinspection PyTypeChecker
-        configurator = self.configurator(str(watch_dir), str(storage_dir), config_mock, str(config_file))
+        configurator.set_config('StorageDirectory', str(new_storage_dir))
+
+        assert configurator.get_config('StorageDirectory') == str(new_storage_dir)
+
+    def test_SetStorageDir_ToExistingDir_OrganizerIsInformedOfTheChange(self, tmpdir, config_file):
+
+        new_storage_dir = tmpdir.mkdir("new_storage")
+
+        configuration = Configuration.from_dict({
+            'StorageDirectory': "/storage/dir"
+        })
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
+
+        configurator.set_config('StorageDirectory', str(new_storage_dir))
+
+        organizer_mock.set_storage_dir.assert_called_once_with(str(new_storage_dir))
+
+    def test_SetStorageDir_ToNonExistingDir_StorageDirIsKept(self, tmpdir, config_file):
+
+        configuration = Configuration.from_dict({
+            'StorageDirectory': "/storage/dir"
+        })
+        # When the directory does not exist the organizer raises FileNotFoundError
+        organizer_stub = MagicMock()
+        organizer_stub.set_storage_dir.side_effect = FileNotFoundError()
+        configurator = Configurator(config_file, configuration, organizer_stub)
 
         with pytest.raises(FileNotFoundError):
-            configurator.set_storage_dir(str(new_storage_dir))
+            configurator.set_config('StorageDirectory', "/new/storage/dir")
 
-        config_mock.write.assert_not_called()
+        assert configurator.get_config('StorageDirectory') == "/storage/dir"
+
+    @patch.object(Configuration, '__setitem__')
+    def test_SetStorageDir_FailsToAccessConfigFile_RaisesOSError(self, config_setitem_stub, config_file):
+
+        configuration = Configuration.from_dict({
+            'StorageDirectory': "/storage/dir"
+        })
+        config_setitem_stub.side_effect = OSError()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
+
+        with pytest.raises(OSError):
+            configurator.set_config('StorageDirectory', "/new/storage/dir")
+
+        organizer_mock.set_storage_dir.assert_not_called()
+
+    @patch.object(Configuration, '__setitem__')
+    def test_SetStorageDir_FailsToCreateConfigFile_RaisesFileNotFoundError(self, config_setitem_stub, config_file):
+
+        configuration = Configuration.from_dict({
+            'StorageDirectory': "/storage/dir"
+        })
+        config_setitem_stub.side_effect = FileNotFoundError()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
+
+        with pytest.raises(FileNotFoundError):
+            configurator.set_config('StorageDirectory', "/new/storage/dir")
+
+        organizer_mock.set_storage_dir.assert_not_called()
+
+    def test_SetInvalidKey_RaisesKeyError(self, config_file):
+
+        configuration = Configuration()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, configuration, organizer_mock)
+
+        with pytest.raises(KeyError) as exception_info:
+            configurator.set_config('InvalidKey', "some value")
+
+        assert "Key 'InvalidKey' is invalid" in str(exception_info.value)
+
+        organizer_mock.set_storage_dir.assert_not_called()
+
+    def test_SetValueForKeyThatCanNotBeEdited_RaisesKeyError(self, config_file):
+
+        config = Configuration()
+        organizer_mock = MagicMock()
+        configurator = Configurator(config_file, config, organizer_mock)
+
+        with pytest.raises(KeyError) as exception_info:
+            configurator.set_config('ConfiguratorPort', '8000')
+
+        assert "Key 'ConfiguratorPort' is invalid" in str(exception_info.value)
+
+        organizer_mock.set_storage_dir.assert_not_called()
+        assert config['ConfiguratorPort'] == defaults.config['ConfiguratorPort']

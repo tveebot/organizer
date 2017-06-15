@@ -1,9 +1,8 @@
-from configparser import ConfigParser
-
 import pytest
 
 from episode_organizer.config_client.config_client import ConfigClient
 from episode_organizer.daemon.configurator import Configurator
+from episode_organizer.daemon.configuration import Configuration
 from episode_organizer.daemon.filter import Filter
 from episode_organizer.daemon.mapper import Mapper
 from episode_organizer.daemon.organizer import Organizer
@@ -17,7 +16,7 @@ class TestConfigClient:
 
         def __init__(self, watch_dir, storage_dir, config, config_file):
             organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
-            self.configurator = Configurator(config, config_file, organizer)
+            self.configurator = Configurator(config_file, config, organizer)
 
         def __enter__(self):
             self.configurator.start()
@@ -26,7 +25,7 @@ class TestConfigClient:
             self.configurator.stop()
             self.configurator.join()
 
-    def test_SetNewWatchDir_GetWatchDirReturnNewWatchDir(self, tmpdir):
+    def test_SetNewWatchDir_GetWatchDirReturnsNewWatchDir(self, tmpdir):
 
         watch_dir = tmpdir.mkdir("watch")
         storage_dir = tmpdir.mkdir("storage")
@@ -34,14 +33,14 @@ class TestConfigClient:
 
         config_file = tmpdir.join("config.ini")
         config_file.write("")
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
+        config = Configuration()
+        config['WatchDirectory'] = str(watch_dir)
+        config['StorageDirectory'] = str(storage_dir)
 
         with self.setup_system(str(watch_dir), str(storage_dir), config, str(config_file)):
 
             # A client connects to the configurator
-            client = ConfigClient(server_address=('localhost', 8000))
+            client = ConfigClient(server_address=('localhost', 35121))
 
             # The client tries to change the watch directory to an existing directory
             client.set_config('WatchDirectory', str(new_watch_dir))
@@ -57,14 +56,14 @@ class TestConfigClient:
 
         config_file = tmpdir.join("config.ini")
         config_file.write("")
-        config = ConfigParser()
-        config['DEFAULT']['WatchDirectory'] = str(watch_dir)
-        config['DEFAULT']['StorageDirectory'] = str(storage_dir)
+        config = Configuration()
+        config['WatchDirectory'] = str(watch_dir)
+        config['StorageDirectory'] = str(storage_dir)
 
         with self.setup_system(str(watch_dir), str(storage_dir), config, str(config_file)):
 
             # A client connects to the configurator
-            client = ConfigClient(server_address=('localhost', 8000))
+            client = ConfigClient(server_address=('localhost', 35121))
 
             with pytest.raises(FileNotFoundError) as exception_info:
                 client.set_config(key='WatchDirectory', value=str(new_watch_dir))
@@ -73,7 +72,7 @@ class TestConfigClient:
 
     def test_ServerIsDisconnected_RaisesConnectionRefusedError(self, tmpdir):
 
-        client = ConfigClient(server_address=('localhost', 8000))
+        client = ConfigClient(server_address=('localhost', 35121))
 
         with pytest.raises(ConnectionRefusedError):
             client.set_config(key='WatchDirectory', value="watch/")

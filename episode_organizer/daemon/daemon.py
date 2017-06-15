@@ -16,27 +16,22 @@ import os
 import re
 import signal
 import sys
-from configparser import ConfigParser
 from logging.config import fileConfig
 
 from docopt import docopt
+
 from episode_organizer.daemon.configurator import Configurator
+from episode_organizer.daemon.configuration import Configuration
 from episode_organizer.daemon.filter import Filter
 from episode_organizer.daemon.mapper import Mapper
 from episode_organizer.daemon.organizer import Organizer
-from pkg_resources import resource_filename, Requirement
-
 from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class Daemon:
 
-    DEFAULT_USER_CONFIG_FILE_LOCATION = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
-    DEFAULT_USER_CONFIG_FILE = os.path.join(DEFAULT_USER_CONFIG_FILE_LOCATION, "config.ini")
-
-    # The configurations in this file are overridden by the ones defined in the configuration file provided
-    # by the user, if the user provides one.
-    default_config_file = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/daemon/default.ini')
+    DEFAULT_USER_CONFIG_DIRECTORY = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
+    DEFAULT_USER_CONFIG_FILE = os.path.join(DEFAULT_USER_CONFIG_DIRECTORY, "config.ini")
 
     ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
                             "2[0-4][0-9]|25[0-5])$")
@@ -44,9 +39,10 @@ class Daemon:
     hostname_pattern = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|"
                                   "[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
-    config_file = DEFAULT_USER_CONFIG_FILE
-    config = ConfigParser()
     logger = logging.getLogger()
+    config = Configuration()
+    config_file = None
+    loggers_config_file = None
     organizer = None
     configurator = None
 
@@ -61,8 +57,9 @@ class Daemon:
         args = docopt(__doc__, version='TV Show Organizer Version 0.1')
 
         try:
-            self.load_configurations(config_file=args['--conf'])
+            self.load_configurations(user_config_file=args['--conf'])
             self.setup_loggers(logs_config_file=args['--logs'])
+            self.logger = logging.getLogger()
             self.setup_organizer()
             self.setup_configurator()
 
@@ -93,28 +90,24 @@ class Daemon:
             self.stop_services()
             sys.exit(1)
 
-    def load_configurations(self, config_file):
+    def load_configurations(self, user_config_file):
 
-        # Use the settings in the default config file if the user config file does not include some parameters
-        self.config.read(self.default_config_file)
-
-        if config_file:
+        if user_config_file:
 
             # User provided a path for a configuration file
             # Changes to the configurations will be updated to this file
-            self.config_file = config_file
-
-            if os.path.isfile(config_file):
-                # Override configurations in the default conf file
-                self.config.read(config_file)
-            else:
-                self.logger.warning("Config file does not exist yet: using default configurations")
+            self.config_file = user_config_file
 
         else:
             # Use the config file in the default location
             # Changes to the configurations will be updated to this file
-            os.makedirs(self.DEFAULT_USER_CONFIG_FILE_LOCATION, exist_ok=True)
+            os.makedirs(self.DEFAULT_USER_CONFIG_DIRECTORY, exist_ok=True)
             self.config_file = self.DEFAULT_USER_CONFIG_FILE
+
+        try:
+            self.config.load(self.config_file)
+        except FileNotFoundError:
+            self.logger.warning("Config file does not exist yet: using default configurations")
 
     def setup_loggers(self, logs_config_file):
 
@@ -123,22 +116,21 @@ class Daemon:
             # User provided a config file for the loggers
             # Will use this configuration
             if not os.path.isfile(logs_config_file):
-                self.logger.error("The loggers file indicated does not exist: %s" % logs_config_file)
-                sys.exit(1)
+                raise FileNotFoundError("The loggers file indicated does not exist: %s" % logs_config_file)
 
-            fileConfig(logs_config_file)
+            self.loggers_config_file = logs_config_file
 
         else:
             # Use the default
-            fileConfig(self.default_config_file)
+            self.loggers_config_file = Configuration.default_config_file
 
-        self.logger = logging.getLogger()
+        fileConfig(self.loggers_config_file)
 
     def setup_organizer(self):
 
         # Check if both the watch and storage directories exist
-        watch_dir = self.config['DEFAULT']['WatchDirectory']
-        storage_dir = self.config['DEFAULT']['StorageDirectory']
+        watch_dir = self.config['WatchDirectory']
+        storage_dir = self.config['StorageDirectory']
 
         if not os.path.isdir(watch_dir):
             raise FileNotFoundError("Watch directory does not exist: %s" % watch_dir)
@@ -155,17 +147,21 @@ class Daemon:
 
     def setup_configurator(self):
 
-        address = self.config['DEFAULT']['ConfiguratorAddress']
+        address = self.config['ConfiguratorAddress']
 
         if not self.ip_pattern.match(address) and not self.hostname_pattern.match(address):
             raise ValueError("The address '%s' is not a valid ip or hostname" % address)
 
-        port = self.config.getint('DEFAULT', 'ConfiguratorPort')
+        try:
+            port = int(self.config['ConfiguratorPort'])
 
-        if not (0 < port < 65536):
-            raise ValueError("The port '%d' is not valid" % port)
+            if not (0 < port < 65536):
+                raise ValueError
 
-        self.configurator = Configurator(self.config, self.config_file, self.organizer, bind_address=(address, port))
+        except ValueError:
+            raise ValueError("The port '%s' is not valid" % self.config['ConfiguratorPort'])
+
+        self.configurator = Configurator(self.config_file, self.config, self.organizer, bind_address=(address, port))
 
     def start_services(self):
         self.logger.info("Starting organizer service...")
