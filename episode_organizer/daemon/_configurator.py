@@ -1,5 +1,4 @@
 import logging
-import os
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCRequestHandler, SimpleXMLRPCServer
 
@@ -16,9 +15,10 @@ class Configurator(Thread):
 
     logger = logging.getLogger('configurator')
 
-    def __init__(self, config: Configuration, organizer: Organizer, bind_address=("localhost", 35121)):
+    def __init__(self, config_file, config: Configuration, organizer: Organizer, bind_address=("localhost", 35121)):
         """ Associates the configurator with an organizer and sets the bind address for the service """
         super().__init__()
+        self.config_file = config_file
         self._config = config
         self._organizer = organizer
         self._bind_address = bind_address
@@ -30,54 +30,72 @@ class Configurator(Thread):
         }
 
     def start(self):
+        """ Starts the configurator service. Binds to the given address and starts listening for requests """
         self._server = SimpleXMLRPCServer(self._bind_address, SimpleXMLRPCRequestHandler, allow_none=True)
         self._server.register_instance(_ConfiguratorInterface(self))
         super().start()
 
     def run(self):
-        """ Runs the service waiting for new requests """
+        """ Runs the service """
         self._server.serve_forever()
 
     def stop(self):
-        """ Stops the service. This method should be called before exiting the application """
+        """ Stops the service. This method should always be called before exiting the application """
         if self._server:
             self._server.shutdown()
             self._server.server_close()
             self._server = None
 
     def set_config(self, key, value):
-
+        """ 
+        Sets a new value for a configuration key. Provided the given configuration key is valid and the given value is 
+        valid for that key, the entire system is updated to use the new value. This method is exception safe, which 
+        means that if any exception is raised, then the configuration and the system are kept in the previous state. 
+        """
         try:
-            set_method = self.set_methods[key]
-            set_method(value)
+            previous_value = self._config[key]
+            self._config.update(self.config_file, key, value)
 
         except KeyError:
             message = "Key '%s' is invalid" % key
             self.logger.warning(message)
             raise KeyError(message)
 
-        self._config[key] = value
+        try:
+            set_method = self.set_methods[key]
+            set_method(value)
+
+        except:
+            # Rollback configuration value
+            self._config.update(self.config_file, key, previous_value)
+            raise
 
     def get_config(self, key):
+        """ 
+        Returns the current value for the given key if the kye is valid.  
+        
+        :return: the current value for the given configuration key
+        :raises KeyError: if the given key is invalid.
+        """
         return self._config[key]
 
     def set_watch_dir(self, watch_dir):
 
-        if not os.path.isdir(watch_dir):
-            message = "Failed to change watch directory: directory '%s' does not exist" % watch_dir
-            self.logger.warning(message)
-            raise FileNotFoundError(message)
+        try:
+            self._organizer.set_watch_dir(watch_dir)
 
-        self._organizer.set_watch_dir(watch_dir)
+        except (FileNotFoundError, OSError):
+            self.logger.error("Failed to set new watch directory: directory '%s' does not exist", watch_dir)
+            raise
 
     def set_storage_dir(self, storage_dir):
 
-        if not os.path.isdir(storage_dir):
-            message = "Failed to change storage directory: directory '%s' does not exist" % storage_dir
-            self.logger.warning(message)
-            raise FileNotFoundError(message)
+        try:
+            self._organizer.set_storage_dir(storage_dir)
 
-        self._organizer.set_storage_dir(storage_dir)
+        except (FileNotFoundError, OSError):
+            self.logger.error("Failed to set new storage directory: directory '%s' does not exist", storage_dir)
+            raise
 
 
 class _ConfiguratorInterface:

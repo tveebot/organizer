@@ -46,6 +46,13 @@ class Organizer(WatchHandler):
         return self.storage_manager.storage_dir
 
     def set_storage_dir(self, value):
+        """
+        Sets a new storage directory for the storage manager. If the directory does not exist, then it raises a 
+        FileNotFoundError and directory is not changed.
+        
+        :param value: the path to the new storage directory. 
+        :raises FileNotFoundError: if the directory does not exist.
+        """
         with self._storage_dir_lock:
             self.storage_manager.storage_dir = value
 
