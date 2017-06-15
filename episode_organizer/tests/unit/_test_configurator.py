@@ -21,7 +21,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'WatchDirectory': "/watch/dir"
             })
             configurator = Configurator(configuration, organizer=MagicMock())
@@ -36,7 +36,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'WatchDirectory': "/watch/dir"
             })
             organizer_mock = MagicMock()
@@ -52,7 +52,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'WatchDirectory': "/watch/dir"
             })
             configurator = Configurator(configuration, organizer=MagicMock())
@@ -67,7 +67,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'WatchDirectory': "/watch/dir"
             })
             config_setitem_stub.side_effect = OSError()
@@ -81,7 +81,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'WatchDirectory': "/watch/dir"
             })
             config_setitem_stub.side_effect = FileNotFoundError()
@@ -96,7 +96,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'StorageDirectory': "/storage/dir"
             })
             configurator = Configurator(configuration, organizer=MagicMock())
@@ -111,7 +111,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'StorageDirectory': "/storage/dir"
             })
             organizer_mock = MagicMock()
@@ -127,7 +127,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'StorageDirectory': "/storage/dir"
             })
             configurator = Configurator(configuration, organizer=MagicMock())
@@ -142,7 +142,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'StorageDirectory': "/storage/dir"
             })
             config_setitem_stub.side_effect = OSError()
@@ -156,7 +156,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration.from_dict("config.ini", {
+            configuration = Configuration.from_dict({
                 'StorageDirectory': "/storage/dir"
             })
             config_setitem_stub.side_effect = FileNotFoundError()
@@ -169,7 +169,7 @@ class TestConfigurator:
 
         with self.stub_out_open():
 
-            configuration = Configuration("config.ini")
+            configuration = Configuration()
             configurator = Configurator(configuration, organizer=MagicMock())
 
             with pytest.raises(KeyError) as exception_info:
