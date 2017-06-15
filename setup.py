@@ -9,9 +9,7 @@ setup(
     author='david',
     author_email='fialho.david@protonmail.com',
 
-    packages=find_packages(exclude=['episode_organizer.daemon.tests',
-                                    'episode_organizer.daemon.tests.integration',
-                                    'episode_organizer.daemon.tests.unit']),
+    packages=find_packages(),
 
     install_requires=['watchdog', 'docopt', 'bidict'],
 
