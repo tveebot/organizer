@@ -29,7 +29,7 @@ from pkg_resources import resource_filename, Requirement
 from episode_organizer.daemon.storage_manager import StorageManager
 
 
-class EntryPoint:
+class Daemon:
 
     DEFAULT_USER_CONFIG_FILE_LOCATION = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
     DEFAULT_USER_CONFIG_FILE = os.path.join(DEFAULT_USER_CONFIG_FILE_LOCATION, "config.ini")
@@ -187,4 +187,4 @@ class EntryPoint:
         self.logger.info("All services were stopped")
 
 if __name__ == '__main__':
-    EntryPoint().main()
+    Daemon().main()
