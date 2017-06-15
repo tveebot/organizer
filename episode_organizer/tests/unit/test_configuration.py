@@ -2,6 +2,7 @@ import configparser
 from configparser import ConfigParser
 from io import StringIO
 
+from unittest.mock import patch
 import pytest
 
 from episode_organizer.daemon.configuration import Configuration
@@ -166,3 +167,58 @@ class TestConfiguration:
 
         with pytest.raises(PermissionError):
             config.save(str(config_file))
+
+    def test_UpdateConfigValue_SavingToExistingFile_ValueIsUpdatedInMemoryAndDisk(self, tmpdir):
+
+        config_file = tmpdir.join("config.ini")
+        config_file.write(
+            "[DEFAULT]\n"
+            "WatchDirectory = test_watch\n"
+        )
+        config = Configuration.from_dict({
+            'WatchDirectory': 'test_watch'
+        })
+
+        config.update(str(config_file), key='WatchDirectory', value='new_watch')
+
+        assert config['WatchDirectory'] == 'new_watch'
+        assert self.config_file_contains(str(config_file), key='WatchDirectory', value='new_watch')
+
+    @patch.object(Configuration, 'save')
+    def test_UpdateConfigValue_SaveRaisesFileNotFoundError_RaisesPermissionErrorValueIsNotUpdated(self, save_stub):
+
+        config = Configuration.from_dict({
+            'WatchDirectory': 'test_watch'
+        })
+        save_stub.side_effect = FileNotFoundError()
+
+        with pytest.raises(FileNotFoundError):
+            config.update("conf/config.ini", key='WatchDirectory', value='new_watch')
+
+        assert config['WatchDirectory'] == 'test_watch'
+
+    @patch.object(Configuration, 'save')
+    def test_UpdateConfigValue_SaveRaisesPermissionError_RaisesPermissionErrorValueIsNotUpdated(self, save_stub):
+
+        config = Configuration.from_dict({
+            'WatchDirectory': 'test_watch'
+        })
+        save_stub.side_effect = PermissionError()
+
+        with pytest.raises(PermissionError):
+            config.update("conf/config.ini", key='WatchDirectory', value='new_watch')
+
+        assert config['WatchDirectory'] == 'test_watch'
+
+    @patch.object(Configuration, 'save')
+    def test_UpdateConfigValue_SaveRaisesOSError_RaisesOSErrorValueIsNotUpdated(self, save_stub):
+
+        config = Configuration.from_dict({
+            'WatchDirectory': 'test_watch'
+        })
+        save_stub.side_effect = OSError()
+
+        with pytest.raises(OSError):
+            config.update("conf/config.ini", key='WatchDirectory', value='new_watch')
+
+        assert config['WatchDirectory'] == 'test_watch'

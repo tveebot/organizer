@@ -94,7 +94,7 @@ class Configuration:
 
         self._config['DEFAULT'][key] = value
 
-    def update(self, key, value, config_file):
+    def update(self, config_file, key, value):
         """
         Calling this method is similar to calling __setitem__() followed by save(). An important difference is that 
         if any error occurs while trying to save changes to the config file, then the configuration in memory is not 
@@ -107,4 +107,12 @@ class Configuration:
         :raise PermissionError:     if it fails to write to the config file.
         :raise FileNotFoundError:   if it failed to create the config file because its directory does not exist.
         """
-        pass
+        previous_value = self[key]
+
+        try:
+            self[key] = value
+            self.save(config_file)
+
+        except (FileNotFoundError, PermissionError, OSError):
+            self[key] = previous_value
+            raise
