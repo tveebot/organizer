@@ -80,12 +80,12 @@ class Organizer(WatchHandler):
 
     def on_new_directory(self, dir_path):
         """ Called by the watcher if the service is running when a new directory is detected in the watch directory """
-        self.logger.debug("Detected new directory: %s" % os.path.relpath(dir_path, self.watch_dir))
+        self.logger.info("Detected new directory: %s" % os.path.relpath(dir_path, self.watch_dir))
         self._handle_new_path(dir_path)
 
     def on_new_file(self, file_path):
         """ Called by the watcher if the service is running when a new file is detected in the watch directory """
-        self.logger.debug("Detected new file: %s" % os.path.relpath(file_path, self.watch_dir))
+        self.logger.info("Detected new file: %s" % os.path.relpath(file_path, self.watch_dir))
         self._handle_new_path(file_path)
 
     def _handle_new_path(self, path):
@@ -95,15 +95,15 @@ class Organizer(WatchHandler):
         episode in the correct sub-directory in the storage directory.
         """
         try:
-            self.logger.info("Obtaining episode file from '%s'" % os.path.relpath(path, self.watch_dir))
+            self.logger.info("Determining episode file...")
             episode_file = self.episode_filter.get_episode_file(path)
             self.logger.info("Determined episode file is '%s'" % os.path.relpath(episode_file, self.watch_dir))
 
-            self.logger.info("Obtaining episode information")
+            self.logger.info("Obtaining episode information...")
             episode = self.mapper.map_to_episode(os.path.basename(path))
             self.logger.info("Obtained info: %s" % str(episode))
 
-            self.logger.info("Moving episode file to storage")
+            self.logger.info("Moving episode file to storage...")
             storage_path = self.storage_manager.store(episode_file, episode)
             self.logger.info("Episode stored in '%s'" % os.path.relpath(storage_path, self.storage_manager.storage_dir))
 
