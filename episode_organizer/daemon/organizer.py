@@ -104,8 +104,8 @@ class Organizer(WatchHandler):
             self.logger.info("Obtained info: %s" % str(episode))
 
             self.logger.info("Moving episode file to storage")
-            self.storage_manager.store(episode_file, episode)
-            self.logger.info("Episode file stored in '%s'" % os.path.relpath(path, self.storage_manager.storage_dir))
+            storage_path = self.storage_manager.store(episode_file, episode)
+            self.logger.info("Episode stored in '%s'" % os.path.relpath(storage_path, self.storage_manager.storage_dir))
 
             if os.path.exists(path):
                 shutil.rmtree(path)

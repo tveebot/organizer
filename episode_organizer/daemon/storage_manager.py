@@ -48,10 +48,11 @@ class StorageManager:
 
         :param episode_file: the episode file to store.
         :param episode:      the episode information corresponding to the given episode file.
+        :return: path where the file was stored.
         :raise FileExistsError: if the episode file already exists in the destination directory.
         """
         move_dir = self.episode_dir(episode)
-        self.logger.debug("Episode file will be stored in directory: %s" % os.path.relpath(self.storage_dir, move_dir))
+        self.logger.debug("Episode file will be stored in directory: %s" % os.path.relpath(move_dir, self.storage_dir))
 
         if not os.path.isdir(self.storage_dir):
             raise StorageError("Storage directory was deleted")
@@ -68,6 +69,8 @@ class StorageManager:
         except shutil.Error:
             raise FileExistsError("File '%s' already exists in '%s'" %
                                   (os.path.basename(episode_file), os.path.relpath(move_dir, start=self.storage_dir)))
+
+        return os.path.join(move_dir, os.path.basename(episode_file))
 
     def episode_dir(self, episode: Episode):
         """
