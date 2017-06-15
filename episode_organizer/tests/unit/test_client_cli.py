@@ -6,7 +6,7 @@ import pytest
 from episode_organizer.config_client import ClientCLI
 
 
-class TestEntrypoint:
+class TestClientCLI:
 
     @staticmethod
     def set_input_args(args):

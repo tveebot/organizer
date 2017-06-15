@@ -29,14 +29,14 @@ from pkg_resources import resource_filename, Requirement
 from episode_organizer.daemon.storage_manager import StorageManager
 
 
-class EntryPoint:
+class Daemon:
 
     DEFAULT_USER_CONFIG_FILE_LOCATION = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
     DEFAULT_USER_CONFIG_FILE = os.path.join(DEFAULT_USER_CONFIG_FILE_LOCATION, "config.ini")
 
     # The configurations in this file are overridden by the ones defined in the configuration file provided
     # by the user, if the user provides one.
-    default_config_file = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/default.ini')
+    default_config_file = resource_filename(Requirement.parse("episode_organizer"), 'episode_organizer/daemon/default.ini')
 
     ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
                             "2[0-4][0-9]|25[0-5])$")
@@ -187,4 +187,4 @@ class EntryPoint:
         self.logger.info("All services were stopped")
 
 if __name__ == '__main__':
-    EntryPoint().main()
+    Daemon().main()
