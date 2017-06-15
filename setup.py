@@ -25,7 +25,7 @@ setup(
     },
 
     package_data={
-        'episode_organizer': ['default.ini'],
+        'episode_organizer.daemon': ['default.ini'],
     },
 
 )
