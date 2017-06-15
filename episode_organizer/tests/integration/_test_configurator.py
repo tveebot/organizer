@@ -25,18 +25,17 @@ class TestConfigurator:
     # noinspection PyArgumentList
     class setup_system:
 
-        def __init__(self, watch_dir, storage_dir, config_file, wait_before_stop=True):
+        def __init__(self, watch_dir, storage_dir, wait_before_stop=True):
             """
             :param watch_dir:           the watch directory provided to the organizer.
             :param storage_dir:         the storage directory provided to the organizer.
-            :param config_file:         the configuration file.
             :param wait_before_stop:    set to false to turnoff the wait time before stopping the services.
             """
             self.wait_before_stop = wait_before_stop
 
             self.organizer = Organizer(watch_dir, Filter(), Mapper(), StorageManager(storage_dir))
 
-            config = Configuration.from_dict(config_file, {
+            config = Configuration.from_dict({
                 'WatchDirectory': watch_dir,
                 'StorageDirectory': storage_dir,
             })
@@ -65,9 +64,8 @@ class TestConfigurator:
         watch_dir = tmpdir.mkdir("watch")
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.mkdir("new_watch")
-        config_file = tmpdir.join("config.ini")
 
-        with self.setup_system(str(watch_dir), str(storage_dir), str(config_file)) as system:
+        with self.setup_system(str(watch_dir), str(storage_dir)) as system:
 
             # Configurator called to set a new watch directory
             system.configurator.set_config('WatchDirectory', str(new_watch_dir))
@@ -84,9 +82,8 @@ class TestConfigurator:
         watch_dir = tmpdir.mkdir("watch")
         storage_dir = tmpdir.mkdir("storage")
         new_watch_dir = tmpdir.join("new_watch")  # note the use of 'join': the directory is not created
-        config_file = tmpdir.join("config.ini")
 
-        with self.setup_system(str(watch_dir), str(storage_dir), str(config_file)) as system:
+        with self.setup_system(str(watch_dir), str(storage_dir)) as system:
 
             # The client tries to change the watch directory to an NON-existing directory, which will raise an error
             with pytest.raises(FileNotFoundError):
@@ -103,9 +100,8 @@ class TestConfigurator:
         watch_dir = tmpdir.mkdir("watch")
         storage_dir = tmpdir.mkdir("storage")
         new_storage_dir = tmpdir.mkdir("new_storage")
-        config_file = tmpdir.join("config.ini")
 
-        with self.setup_system(str(watch_dir), str(storage_dir), str(config_file)) as system:
+        with self.setup_system(str(watch_dir), str(storage_dir)) as system:
 
             # The client tries to change the storage directory to an existing directory
             system.configurator.set_config('StorageDirectory', str(new_storage_dir))
@@ -122,9 +118,8 @@ class TestConfigurator:
         watch_dir = tmpdir.mkdir("watch")
         storage_dir = tmpdir.mkdir("storage")
         new_storage_dir = tmpdir.join("new_storage")  # note the use of 'join': the directory is not created
-        config_file = tmpdir.join("config.ini")
 
-        with self.setup_system(str(watch_dir), str(storage_dir), str(config_file)) as system:
+        with self.setup_system(str(watch_dir), str(storage_dir)) as system:
 
             # The client tries to change the storage directory to an NON-existing directory, which will raise an error
             with pytest.raises(FileNotFoundError):
