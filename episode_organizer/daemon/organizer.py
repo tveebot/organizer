@@ -97,7 +97,7 @@ class Organizer(WatchHandler):
         try:
             self.logger.info("Obtaining episode file from '%s'" % os.path.relpath(path, self.watch_dir))
             episode_file = self.episode_filter.get_episode_file(path)
-            self.logger.info("Filter indicated the episode file is '%s'" % os.path.relpath(path, self.watch_dir))
+            self.logger.info("Determined episode file is '%s'" % os.path.relpath(episode_file, self.watch_dir))
 
             self.logger.info("Obtaining episode information")
             episode = self.mapper.map_to_episode(os.path.basename(path))
