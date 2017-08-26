@@ -11,6 +11,8 @@ class TestMapper:
         ("Prison.Break.S05E09.720p.HDTV.x264-KILLERS[rarbg]", Episode(TVShow("Prison Break"), season=5, number=9)),
         ("Castle.2009.S08E22.HDTV.x264-KILLERS[rarbg]", Episode(TVShow("Castle 2009"), season=8, number=22)),
         ("Prison.Break.S1E1", Episode(TVShow("Prison Break"), season=1, number=1)),
+        ("prison.break.S1E1", Episode(TVShow("Prison Break"), season=1, number=1)),
+        ("PRison.BrEAk.S1E1", Episode(TVShow("Prison Break"), season=1, number=1)),
     ])
     def test_correct(self, name, expected_episode):
 

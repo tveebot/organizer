@@ -39,8 +39,12 @@ class Mapper:
 
             match = self._episode_pattern.match(word)
             if match:
-                # The previous words compose the tv show name
+                # Note: The words right before the episode pattern compose the
+                # tv show name.
                 tvshow_name = " ".join(words[:index])
+
+                # Capitalize the first letter of each word of the tvshow name
+                tvshow_name = tvshow_name.title()
 
                 season = int(match.group('season'))
                 number = int(match.group('number'))
