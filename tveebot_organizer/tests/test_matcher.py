@@ -14,7 +14,7 @@ class TestMatcher:
         ("PRison.BrEAk.S01E01", Episode(TVShow("Prison Break"), season=1, number=1)),
     ])
     def test_valid_names(self, name, expected_episode):
-        assert Matcher().map_to_episode(name) == expected_episode
+        assert Matcher().match(name) == expected_episode
 
     @pytest.mark.parametrize("name", [
         "Prison.Break.720p.HDTV.x264-KILLERS[rarbg]",
@@ -26,4 +26,4 @@ class TestMatcher:
     ])
     def test_invalid_names(self, name):
         with pytest.raises(ValueError):
-            Matcher().map_to_episode(name)
+            Matcher().match(name)

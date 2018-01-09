@@ -20,7 +20,7 @@ class Matcher:
     # and E01 indicates the episode is the first episode of the season
     _episode_pattern = re.compile('S(?P<season>\d+)E(?P<number>\d+)\Z')
 
-    def map_to_episode(self, name: str) -> Episode:
+    def match(self, name: str) -> Episode:
         """
         Takes an episode name, parses it, and returns the corresponding episode object.
 
