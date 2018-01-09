@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 
-from episode_organizer.episode import Episode
+from episode_organizer.dataclasses import Episode
 
 
 class StorageError(Exception):

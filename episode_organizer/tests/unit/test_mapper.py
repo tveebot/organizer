@@ -1,8 +1,8 @@
 import pytest
-from episode_organizer.episode import Episode
+from episode_organizer.dataclasses import Episode
 
 from episode_organizer.daemon.mapper import Mapper
-from episode_organizer.tvshow import TVShow
+from episode_organizer.dataclasses import TVShow
 
 
 class TestMapper:

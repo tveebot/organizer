@@ -1,8 +1,6 @@
 import re
 
-from episode_organizer.episode import Episode
-
-from episode_organizer.tvshow import TVShow
+from episode_organizer.dataclasses import Episode, TVShow
 
 
 class Mapper:

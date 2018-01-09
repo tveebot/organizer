@@ -14,11 +14,10 @@ Options:
   --version       Show version.
 
 """
-import re
-
 import logging
-
+import re
 import sys
+
 from docopt import docopt
 
 from episode_organizer.config_client.config_client import ConfigClient
