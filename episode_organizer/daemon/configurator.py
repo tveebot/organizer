@@ -6,6 +6,8 @@ from episode_organizer.daemon.configuration import Configuration
 from episode_organizer.daemon.organizer import Organizer
 from episode_organizer.xmlrpc_errors import raise_faults
 
+logger = logging.getLogger('configurator')
+
 
 class Configurator(Thread):
     """
@@ -13,8 +15,6 @@ class Configurator(Thread):
     dynamically. It is implemented as a simple XML-RPC server and provides methods to read and
     modify each configuration parameter.
     """
-
-    logger = logging.getLogger('configurator')
 
     def __init__(self, config_file, config: Configuration, organizer: Organizer,
                  bind_address=("localhost", 35121)):
@@ -72,7 +72,7 @@ class Configurator(Thread):
 
         except KeyError:
             message = "Key '%s' is invalid" % key
-            self.logger.warning(message)
+            logger.warning(message)
             raise KeyError(message)
 
         previous_value = self._config[key]
@@ -101,7 +101,7 @@ class Configurator(Thread):
             self._organizer.set_watch_dir(watch_dir)
 
         except (FileNotFoundError, OSError):
-            self.logger.error("Failed to set new watch directory: directory '%s' does not exist",
+            logger.error("Failed to set new watch directory: directory '%s' does not exist",
                               watch_dir)
             raise
 
@@ -111,7 +111,7 @@ class Configurator(Thread):
             self._organizer.set_storage_dir(storage_dir)
 
         except (FileNotFoundError, OSError):
-            self.logger.error("Failed to set new storage directory: directory '%s' does not exist",
+            logger.error("Failed to set new storage directory: directory '%s' does not exist",
                               storage_dir)
             raise
 

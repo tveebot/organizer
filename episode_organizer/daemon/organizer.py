@@ -9,14 +9,14 @@ from episode_organizer.daemon.storage_manager import StorageManager, StorageErro
 from episode_organizer.daemon.watch_handler import WatchHandler
 from episode_organizer.daemon.watcher import Watcher
 
+logger = logging.getLogger('organizer')
+
 
 class Organizer(WatchHandler):
     """
     The organizer is the central component of the application. It talks to all other components
     and makes the application work. This is the entry point of the organizing service.
     """
-
-    logger = logging.getLogger('organizer')
 
     def __init__(self, watch_dir: str, episode_filter: Filter, mapper: Mapper,
                  storage_manager: StorageManager):
@@ -83,7 +83,7 @@ class Organizer(WatchHandler):
         Called by the watcher if the service is running when a new directory is detected in
         the watch directory.
         """
-        self.logger.info("Detected new directory: %s" % os.path.relpath(dir_path, self.watch_dir))
+        logger.info("Detected new directory: %s" % os.path.relpath(dir_path, self.watch_dir))
         self._handle_new_path(dir_path)
 
     def on_new_file(self, file_path):
@@ -91,7 +91,7 @@ class Organizer(WatchHandler):
         Called by the watcher if the service is running when a new file is detected in the
         watch directory.
         """
-        self.logger.info("Detected new file: %s" % os.path.relpath(file_path, self.watch_dir))
+        logger.info("Detected new file: %s" % os.path.relpath(file_path, self.watch_dir))
         self._handle_new_path(file_path)
 
     def _handle_new_path(self, path):
@@ -102,37 +102,36 @@ class Organizer(WatchHandler):
         directory.
         """
         try:
-            self.logger.info("Determining episode file...")
+            logger.info("Determining episode file...")
             episode_file = self.episode_filter.get_episode_file(path)
-            self.logger.info("Determined episode file is '%s'" %
+            logger.info("Determined episode file is '%s'" %
                              os.path.relpath(episode_file, self.watch_dir))
 
-            self.logger.info("Obtaining episode information...")
+            logger.info("Obtaining episode information...")
             episode = self.mapper.map_to_episode(os.path.basename(path))
-            self.logger.info("Obtained info: %s" % str(episode))
+            logger.info("Obtained info: %s" % str(episode))
 
-            self.logger.info("Moving episode file to storage...")
+            logger.info("Moving episode file to storage...")
             storage_path = self.storage_manager.store(episode_file, episode)
-            self.logger.info("Episode stored in '%s'" %
+            logger.info("Episode stored in '%s'" %
                              os.path.relpath(storage_path, self.storage_manager.storage_dir))
 
             if os.path.exists(path):
                 shutil.rmtree(path)
-                self.logger.info("Removed '%s' from watch directory" %
+                logger.info("Removed '%s' from watch directory" %
                                  os.path.relpath(path, self.watch_dir))
 
         except StorageError as error:
-            self.logger.error(str(error))
+            logger.error(str(error))
             # Unrecoverable error - exit the service
-            self.logger.info("Unrecoverable error: service will exit")
+            logger.info("Unrecoverable error: service will exit")
             self.stop()
 
         except FileExistsError as error:  # avoid collision with OS Error
-            self.logger.warning(str(error))
+            logger.warning(str(error))
 
         except OSError:
-            self.logger.exception("Unexpected OS Error was raised")
+            logger.exception("Unexpected OS Error was raised")
 
         except ValueError as error:
-            self.logger.warning(str(error))
-
+            logger.warning(str(error))

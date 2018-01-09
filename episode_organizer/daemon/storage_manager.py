@@ -13,6 +13,9 @@ class StorageError(Exception):
     pass
 
 
+logger = logging.getLogger('storageManager')
+
+
 class StorageManager:
     """
     The storage manager is one of the most important components. Its job is to 'store' (see store
@@ -21,15 +24,13 @@ class StorageManager:
     alongside with the episode file.
     """
 
-    logger = logging.getLogger('storageManager')
-
     def __init__(self, storage_dir: str):
         """
         Defines the storage directory. This directory is the entry point where all tv show
         episode is stored.
         """
         self._storage_dir = storage_dir
-        self.logger.info("Storage directory: %s" % self.storage_dir)
+        logger.info("Storage directory: %s" % self.storage_dir)
 
     @property
     def storage_dir(self):
@@ -57,19 +58,19 @@ class StorageManager:
         :raise FileExistsError: if the episode file already exists in the destination directory.
         """
         move_dir = self.episode_dir(episode)
-        self.logger.debug("Episode file will be stored in directory: %s" %
+        logger.debug("Episode file will be stored in directory: %s" %
                           os.path.relpath(move_dir, self.storage_dir))
 
         if not os.path.isdir(self.storage_dir):
             raise StorageError("Storage directory was deleted")
 
         # Make sure the directory exists
-        self.logger.debug("Creating directories for the episode file")
+        logger.debug("Creating directories for the episode file")
         os.makedirs(move_dir, exist_ok=True)
 
         try:
             # Only then, move the file to the directory
-            self.logger.debug("Moving episode file to '%s'" % move_dir)
+            logger.debug("Moving episode file to '%s'" % move_dir)
             shutil.move(episode_file, move_dir)
 
         except shutil.Error:
