@@ -11,8 +11,6 @@ setup(
 
     packages=find_packages(),
 
-    install_requires=['watchdog', 'docopt', 'bidict'],
-
     extras_require={
         'test': ['pytest'],
     },
