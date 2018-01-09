@@ -4,7 +4,7 @@ setup(
     name='episode-organizer',
     version='0.2',
     description='Tool to organize video files corresponding to TV Shows',
-    url='https://github.com/davidfialho14/episode_organizer',
+    url='https://github.com/tveebot/organizer',
     license='MIT',
     author='david',
     author_email='fialho.david@protonmail.com',
