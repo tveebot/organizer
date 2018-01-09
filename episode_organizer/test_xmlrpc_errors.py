@@ -19,7 +19,6 @@ def test_error_code_ProvidesExpectedErrorClassInstance_ReturnsCorrespondingCode(
 
 
 def test_error_code_ProvidesUnexpectedErrorClass_RaisesKeyError():
-
     with pytest.raises(KeyError):
         error_code(UnexpectedException)
 
@@ -29,13 +28,11 @@ def test_error_ProvidesValidCode_ReturnsCorrespondingError():
 
 
 def test_error_ProvidesInvalidErrorCode_RaisesKeyError():
-
     with pytest.raises(KeyError):
         error(1)
 
 
 def test_raise_faults_FunctionRaisesExpectedError_RaisesFaultWithCorrespondingCodeAndMessage():
-
     @raise_faults()
     def raising_func():
         raise FileNotFoundError("error message")
@@ -48,7 +45,6 @@ def test_raise_faults_FunctionRaisesExpectedError_RaisesFaultWithCorrespondingCo
 
 
 def test_raise_faults_FunctionDoesNotRaiseException_DoesNotRaiseException():
-
     @raise_faults()
     def non_raising_func():
         pass  # does not raise anything
@@ -66,7 +62,6 @@ def test_raise_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
 
 
 def test_expect_faults_FaultWithValidCode_RaisesCorrespondingExceptionWithTheFaultMessage():
-
     @expect_faults()
     def raising_func():
         raise Fault(faultCode=1001, faultString="error message")
@@ -78,7 +73,6 @@ def test_expect_faults_FaultWithValidCode_RaisesCorrespondingExceptionWithTheFau
 
 
 def test_expect_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
-
     @expect_faults()
     def non_raising_func():
         pass  # does not raise anything
@@ -87,7 +81,6 @@ def test_expect_faults_FunctionRaisesUnexpectedError_RaisesTheUnexpectedError():
 
 
 def test_expect_faults_FunctionRaisesExceptionNotFault_RaisesTheException():
-
     @expect_faults()
     def non_raising_func():
         raise Exception()
@@ -97,7 +90,6 @@ def test_expect_faults_FunctionRaisesExceptionNotFault_RaisesTheException():
 
 
 def test_expect_faults_FaultWithInvalidCode_RaisesSameFaultError():
-
     @expect_faults()
     def raising_func():
         raise Fault(faultCode=1, faultString="error message")
@@ -110,7 +102,6 @@ def test_expect_faults_FaultWithInvalidCode_RaisesSameFaultError():
 
 
 def test_expect_faults():
-
     with pytest.raises(FileNotFoundError) as exception_info:
         with expect_faults():
             raise Fault(faultCode=1001, faultString="error message")

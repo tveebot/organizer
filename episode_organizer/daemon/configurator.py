@@ -9,14 +9,18 @@ from episode_organizer.xmlrpc_errors import raise_faults
 
 class Configurator(Thread):
     """
-    The configurator service provides a mechanism to change the configuration options dynamically.
-    It is implemented as a simple XML-RPC server and provides methods to read and modify each configuration parameter.
+    The configurator service provides a mechanism to change the configuration options
+    dynamically. It is implemented as a simple XML-RPC server and provides methods to read and
+    modify each configuration parameter.
     """
 
     logger = logging.getLogger('configurator')
 
-    def __init__(self, config_file, config: Configuration, organizer: Organizer, bind_address=("localhost", 35121)):
-        """ Associates the configurator with an organizer and sets the bind address for the service """
+    def __init__(self, config_file, config: Configuration, organizer: Organizer,
+                 bind_address=("localhost", 35121)):
+        """
+        Associates the configurator with an organizer and sets the bind address for the service.
+        """
         super().__init__()
         self.config_file = config_file
         self._config = config
@@ -30,8 +34,12 @@ class Configurator(Thread):
         }
 
     def start(self):
-        """ Starts the configurator service. Binds to the given address and starts listening for requests """
-        self._server = SimpleXMLRPCServer(self._bind_address, SimpleXMLRPCRequestHandler, allow_none=True)
+        """
+        Starts the configurator service.
+        Binds to the given address and starts listening for requests.
+        """
+        self._server = SimpleXMLRPCServer(self._bind_address, SimpleXMLRPCRequestHandler,
+                                          allow_none=True)
         self._server.register_instance(_ConfiguratorInterface(self))
         super().start()
 
@@ -40,22 +48,26 @@ class Configurator(Thread):
         self._server.serve_forever()
 
     def stop(self):
-        """ Stops the service. This method should always be called before exiting the application """
+        """
+        Stops the service.
+        This method should always be called before exiting the application.
+        """
         if self._server:
             self._server.shutdown()
             self._server.server_close()
             self._server = None
 
     def set_config(self, key, value):
-        """ 
-        Sets a new value for a configuration key. Provided the given configuration key is valid and the given value is 
-        valid for that key, the entire system is updated to use the new value. This method is exception safe, which 
-        means that if any exception is raised, then the configuration and the system are kept in the previous state. 
+        """
+        Sets a new value for a configuration key. Provided the given configuration key is valid
+        and the given value is valid for that key, the entire system is updated to use the new
+        value. This method is exception safe, which means that if any exception is raised,
+        then the configuration and the system are kept in the previous state.
         """
         try:
-            # If the key is not contained in the 'set_methods' dict, then it is not valid or is not editable
-            # Do not use the configuration getitem method to test if a key is valid because it will not raise a
-            # key error for non-editable keys
+            # If the key is not contained in the 'set_methods' dict, then it is not valid or is
+            # not editable Do not use the configuration getitem method to test if a key is valid
+            # because it will not raise a key error for non-editable keys
             set_method = self.set_methods[key]
 
         except KeyError:
@@ -89,7 +101,8 @@ class Configurator(Thread):
             self._organizer.set_watch_dir(watch_dir)
 
         except (FileNotFoundError, OSError):
-            self.logger.error("Failed to set new watch directory: directory '%s' does not exist", watch_dir)
+            self.logger.error("Failed to set new watch directory: directory '%s' does not exist",
+                              watch_dir)
             raise
 
     def set_storage_dir(self, storage_dir):
@@ -98,7 +111,8 @@ class Configurator(Thread):
             self._organizer.set_storage_dir(storage_dir)
 
         except (FileNotFoundError, OSError):
-            self.logger.error("Failed to set new storage directory: directory '%s' does not exist", storage_dir)
+            self.logger.error("Failed to set new storage directory: directory '%s' does not exist",
+                              storage_dir)
             raise
 
 

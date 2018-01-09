@@ -8,8 +8,9 @@ from episode_organizer.daemon.watch_handler import WatchHandler
 
 class Watcher:
     """
-    The watcher is the starting point for the tv show organizing service. It watches a single directory and notifies
-    the TV Show Organizer once a new file or directory is detected on that directory.
+    The watcher is the starting point for the tv show organizing service. It watches a single
+    directory and notifies the TV Show Organizer once a new file or directory is detected on that
+    directory.
     """
 
     logger = logging.getLogger('watcher')
@@ -48,7 +49,8 @@ class Watcher:
 
     def change_watch_dir(self, new_watch_dir: str):
         """
-        Changes the directory being watched. Changes to the previous directory will no longer be detected.
+        Changes the directory being watched. Changes to the previous directory will no longer be
+        detected.
          
         :param new_watch_dir: the new directory to be watched.
         :raises FileNotFoundError: if the given directory does not exist.

@@ -6,7 +6,8 @@ from episode_organizer.xmlrpc_errors import expect_faults
 class ConfigClient:
 
     def __init__(self, server_address):
-        self._configurator = ServerProxy('http://%s:%s' % (server_address[0], server_address[1]), allow_none=True)
+        self._configurator = ServerProxy('http://%s:%s' % (server_address[0], server_address[1]),
+                                         allow_none=True)
 
     @expect_faults()
     def set_config(self, key, value):

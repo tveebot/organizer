@@ -29,14 +29,14 @@ from episode_organizer.daemon.storage_manager import StorageManager
 
 
 class Daemon:
-
     DEFAULT_USER_CONFIG_DIRECTORY = os.path.join(os.getenv("HOME"), ".config", "episode_organizer")
     DEFAULT_USER_CONFIG_FILE = os.path.join(DEFAULT_USER_CONFIG_DIRECTORY, "config.ini")
 
-    ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
-                            "2[0-4][0-9]|25[0-5])$")
+    ip_pattern = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|"
+                            "[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
 
-    hostname_pattern = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|"
+    hostname_pattern = re.compile("^(([a-zA-Z0-9]|"
+                                  "[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|"
                                   "[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 
     logger = logging.getLogger()
@@ -116,7 +116,8 @@ class Daemon:
             # User provided a config file for the loggers
             # Will use this configuration
             if not os.path.isfile(logs_config_file):
-                raise FileNotFoundError("The loggers file indicated does not exist: %s" % logs_config_file)
+                raise FileNotFoundError("The loggers file indicated does not exist: %s" %
+                                        logs_config_file)
 
             self.loggers_config_file = logs_config_file
 
@@ -161,7 +162,8 @@ class Daemon:
         except ValueError:
             raise ValueError("The port '%s' is not valid" % self.config['ConfiguratorPort'])
 
-        self.configurator = Configurator(self.config_file, self.config, self.organizer, bind_address=(address, port))
+        self.configurator = Configurator(self.config_file, self.config, self.organizer,
+                                         bind_address=(address, port))
 
     def start_services(self):
         self.logger.info("Starting organizer service...")
@@ -181,6 +183,7 @@ class Daemon:
         self.configurator.stop()
 
         self.logger.info("All services were stopped")
+
 
 if __name__ == '__main__':
     Daemon().main()

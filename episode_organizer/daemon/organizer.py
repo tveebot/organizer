@@ -12,13 +12,14 @@ from episode_organizer.daemon.watcher import Watcher
 
 class Organizer(WatchHandler):
     """
-    The organizer is the central component of the application. It talks to all other components and makes the
-    application work. This is the entry point of the organizing service.
+    The organizer is the central component of the application. It talks to all other components
+    and makes the application work. This is the entry point of the organizing service.
     """
 
     logger = logging.getLogger('organizer')
 
-    def __init__(self, watch_dir: str, episode_filter: Filter, mapper: Mapper, storage_manager: StorageManager):
+    def __init__(self, watch_dir: str, episode_filter: Filter, mapper: Mapper,
+                 storage_manager: StorageManager):
         """
         Initializes the organizer. It takes all necessary components to setup the service.
 
@@ -46,8 +47,8 @@ class Organizer(WatchHandler):
 
     def set_storage_dir(self, value):
         """
-        Sets a new storage directory for the storage manager. If the directory does not exist, then it raises a 
-        FileNotFoundError and directory is not changed.
+        Sets a new storage directory for the storage manager. If the directory does not exist,
+        then it raises a FileNotFoundError and directory is not changed.
         
         :param value: the path to the new storage directory. 
         :raises FileNotFoundError: if the directory does not exist.
@@ -78,25 +79,33 @@ class Organizer(WatchHandler):
             self.watcher.change_watch_dir(watch_dir)
 
     def on_new_directory(self, dir_path):
-        """ Called by the watcher if the service is running when a new directory is detected in the watch directory """
+        """
+        Called by the watcher if the service is running when a new directory is detected in
+        the watch directory.
+        """
         self.logger.info("Detected new directory: %s" % os.path.relpath(dir_path, self.watch_dir))
         self._handle_new_path(dir_path)
 
     def on_new_file(self, file_path):
-        """ Called by the watcher if the service is running when a new file is detected in the watch directory """
+        """
+        Called by the watcher if the service is running when a new file is detected in the
+        watch directory.
+        """
         self.logger.info("Detected new file: %s" % os.path.relpath(file_path, self.watch_dir))
         self._handle_new_path(file_path)
 
     def _handle_new_path(self, path):
         """
-        Handles a newly detected file or directory in the watch directory. It uses the filter to determine if there
-        is a new episode file and if it there is, then it uses and the mapper and storage manager to store the
-        episode in the correct sub-directory in the storage directory.
+        Handles a newly detected file or directory in the watch directory. It uses the filter to
+        determine if there is a new episode file and if it there is, then it uses and the mapper
+        and storage manager to store the episode in the correct sub-directory in the storage
+        directory.
         """
         try:
             self.logger.info("Determining episode file...")
             episode_file = self.episode_filter.get_episode_file(path)
-            self.logger.info("Determined episode file is '%s'" % os.path.relpath(episode_file, self.watch_dir))
+            self.logger.info("Determined episode file is '%s'" %
+                             os.path.relpath(episode_file, self.watch_dir))
 
             self.logger.info("Obtaining episode information...")
             episode = self.mapper.map_to_episode(os.path.basename(path))
@@ -104,11 +113,13 @@ class Organizer(WatchHandler):
 
             self.logger.info("Moving episode file to storage...")
             storage_path = self.storage_manager.store(episode_file, episode)
-            self.logger.info("Episode stored in '%s'" % os.path.relpath(storage_path, self.storage_manager.storage_dir))
+            self.logger.info("Episode stored in '%s'" %
+                             os.path.relpath(storage_path, self.storage_manager.storage_dir))
 
             if os.path.exists(path):
                 shutil.rmtree(path)
-                self.logger.info("Removed '%s' from watch directory" % os.path.relpath(path, self.watch_dir))
+                self.logger.info("Removed '%s' from watch directory" %
+                                 os.path.relpath(path, self.watch_dir))
 
         except StorageError as error:
             self.logger.error(str(error))

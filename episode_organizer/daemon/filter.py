@@ -3,10 +3,10 @@ import os
 
 class Filter:
     """
-    The filter is an important component. The filter is called every time a new file or directory is detected by the
-    watcher. Its job is to filter out irrelevant files and select only the single episode file. For a new directory,
-    the filter looks for video files inside the directory and determines the episode directory to be the largest of
-    those.
+    The filter is an important component. The filter is called every time a new file or directory
+    is detected by the watcher. Its job is to filter out irrelevant files and select only the
+    single episode file. For a new directory, the filter looks for video files inside the
+    directory and determines the episode directory to be the largest of those.
     """
 
     # Supported video file extensions
@@ -14,19 +14,20 @@ class Filter:
 
     def get_episode_file(self, path):
         """
-        Entry point for the filter. The 'path' argument may be a file or a directory. If it is a file and this file
-        is a video file, then that file is returned. If 'path' is a directory, then the episode file corresponds to
-        the biggest video file inside that directory.
+        Entry point for the filter. The 'path' argument may be a file or a directory. If it is a
+        file and this file is a video file, then that file is returned. If 'path' is a directory,
+        then the episode file corresponds to the biggest video file inside that directory.
 
         :param path: the path to a file or directory.
         :return: the episode file.
-        :raise ValueError: if the path is a file and it is not a video file or if path is a directory and does not
-                           contain any video file.
+        :raise ValueError: if the path is a file and it is not a video file or if path is a
+                           directory and does not contain any video file.
         """
         if os.path.isdir(path):
 
             # Look inside the directory for the biggest video file
-            episode_file = max((file for file in self._list_video_files(path)), key=os.path.getsize, default=None)
+            episode_file = max((file for file in self._list_video_files(path)),
+                               key=os.path.getsize, default=None)
 
             if episode_file is None:
                 raise ValueError("The directory '%s' does not contain any video file" % path)
@@ -42,8 +43,9 @@ class Filter:
     @staticmethod
     def is_video_file(path):
         """
-        Checks is a file is a video file or not. To determine this, the method checks if 'path' is an existing
-        file and if its extension is corresponds to a video extension (see supported video extensions above).
+        Checks is a file is a video file or not. To determine this, the method checks if 'path'
+        is an existing file and if its extension is corresponds to a video extension (see
+        supported video extensions above).
 
         :param path: the path to check if is a video file.
         :return: True if the path is a video file and False if otherwise.

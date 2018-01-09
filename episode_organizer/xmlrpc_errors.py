@@ -1,10 +1,9 @@
-from contextlib import ContextDecorator, contextmanager
+from contextlib import ContextDecorator
 from functools import wraps
 from inspect import isclass
 from xmlrpc.client import Fault
 
 from bidict import bidict
-
 
 _error_codes = bidict({
     FileNotFoundError: 1001,
@@ -13,7 +12,9 @@ _error_codes = bidict({
 
 
 def error_code(error):
-    """ Returns the error code for the given error. The error may be an exception class or instance. """
+    """
+    Returns the error code for the given error. The error may be an exception class or instance.
+    """
 
     if isclass(error):
         return _error_codes[error]
@@ -29,9 +30,11 @@ def error(error_code):
 class raise_faults:
     """
     This is supposed to be used as a decorator or a context manager.
-    All the exceptions raised by the decorated function (or context) are converted to Fault exceptions. If the raised
-    error is included in the 'error_codes' list, then fault code will be set to the error code of that error. Otherwise,
-    the exception is just re-raised and we let the xmlrpc library convert the exception to a Fault.
+
+    All the exceptions raised by the decorated function (or context) are converted to Fault
+    exceptions. If the raised error is included in the 'error_codes' list, then fault code will
+    be set to the error code of that error. Otherwise, the exception is just re-raised and we let
+    the xmlrpc library convert the exception to a Fault.
     """
 
     def __call__(self, func):
@@ -67,9 +70,11 @@ class raise_faults:
 class expect_faults(ContextDecorator):
     """
     This is supposed to be used as a decorator or a context manager.
-    All the Fault exceptions raised by the decorated function (context) are converted to the corresponding errors based
-    on the fault code. If the fault code is included in the 'error_codes' list, then the corresponding exception is
-    raised with the error message included in the fault string. Otherwise, the Fault exception is re-raised. If the
+
+    All the Fault exceptions raised by the decorated function (context) are converted to the
+    corresponding errors based on the fault code. If the fault code is included in the
+    'error_codes' list, then the corresponding exception is raised with the error message
+    included in the fault string. Otherwise, the Fault exception is re-raised. If the
     function/context raises an exception other than a Fault, then this exception is passed through.
     """
 
