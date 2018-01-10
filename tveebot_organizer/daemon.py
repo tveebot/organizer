@@ -42,7 +42,31 @@ def main():
     # Setup all loggers
     fileConfig(config)
 
-    # TODO add support for custom log file
+    if args['--log']:
+        log_path = Path(args['--log'])
+
+        try:
+            handler = logging.FileHandler(str(log_path))
+        except OSError as error:
+            logger.error(f"failed to setup log file: {str(error)}")
+            sys.exit(1)
+
+        # Get handler from default logger
+        # This is sort of an hack to get the formatter define in the default configuration file
+        default_handler: logging.FileHandler = logger.handlers[0]
+        handler.setFormatter(default_handler.formatter)
+
+        # Add handler to each logger
+        loggers = [
+            logging.getLogger(),
+            logging.getLogger('organizer'),
+            logging.getLogger('storageManager'),
+            logging.getLogger('watcher'),
+        ]
+
+        # noinspection PyShadowingNames
+        for log in loggers:
+            log.addHandler(handler)
 
     if args['--conf']:
         config_file = Path(args['--conf'])
