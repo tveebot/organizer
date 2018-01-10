@@ -33,6 +33,11 @@ class Organizer:
         """
         logger.debug("looking for episode file...")
         episode_file = self.filter.find_episode_file(path)
+
+        if episode_file is None:
+            logger.info(f"ignored '{path.name}'")
+            return
+
         logger.info(f"episode file is '{episode_file.name}'")
 
         logger.debug("matching episode...")
