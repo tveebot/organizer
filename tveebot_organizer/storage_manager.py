@@ -2,7 +2,7 @@ import logging
 import shutil
 from pathlib import Path
 
-from episode_organizer.dataclasses import Episode
+from tveebot_organizer.dataclasses import Episode
 
 
 class EpisodeExists(Exception):

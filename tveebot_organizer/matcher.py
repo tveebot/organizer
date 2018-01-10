@@ -1,6 +1,6 @@
 import re
 
-from episode_organizer.dataclasses import Episode, TVShow
+from tveebot_organizer.dataclasses import Episode, TVShow
 
 
 class Matcher:
