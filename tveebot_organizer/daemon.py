@@ -34,7 +34,7 @@ config = configparser.ConfigParser()
 
 
 def main():
-    args = docopt(__doc__, version="TVeeBot Organizer: 0.1")
+    args = docopt(__doc__, version="TVeeBot Organizer: 1.0")
 
     # Load the default configurations first
     config.read(DEFAULT_CONFIG_FILE)
