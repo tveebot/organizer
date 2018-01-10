@@ -15,6 +15,8 @@ setup(
         'tveebot_organizer': ['config.ini'],
     },
 
+    install_requires=['docopt==0.6.2', 'watchdog==0.8.3'],
+
     extras_require={
         'test': ['pytest'],
     },
