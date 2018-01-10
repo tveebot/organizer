@@ -15,12 +15,12 @@ class Organizer:
     The organizer is the central component of the application.
     """
 
-    def __init__(self, episode_filter: Filter, matcher: Matcher, storage_manager: StorageManager):
+    def __init__(self, filter: Filter, matcher: Matcher, storage_manager: StorageManager):
         """
         Initializes the organizer. It takes all necessary components to setup the service.
         """
         super().__init__()
-        self.filter = episode_filter
+        self.filter = filter
         self.matcher = matcher
         self.storage_manager = storage_manager
 
