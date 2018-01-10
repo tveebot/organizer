@@ -21,7 +21,7 @@ class StorageManager:
 
     def __init__(self, library_dir: Path):
         """ Initializes the storage manager, specifying the library directory. """
-        self._library_dir: Path = library_dir
+        self._library_dir = library_dir
 
     @property
     def library_dir(self) -> Path:
@@ -30,7 +30,7 @@ class StorageManager:
     @library_dir.setter
     def library_dir(self, directory: Path):
         if not directory.is_dir():
-            raise FileNotFoundError(f"library directory was not found: {directory}")
+            raise FileNotFoundError("library directory was not found: %s" % directory)
 
         self._library_dir = directory
 
@@ -48,20 +48,20 @@ class StorageManager:
         :raise OSError:           if some error occurs while trying to store the episode
         """
         episode_dir = self.episode_dir(episode)
-        logger.debug(f"episode will be stored in: {episode_dir.relative_to(self.library_dir)}")
+        logger.debug("episode will be stored in: %s" % episode_dir.relative_to(self.library_dir))
 
         if not self.library_dir.is_dir():
-            raise FileNotFoundError(f"library directory was removed: {self.library_dir}")
+            raise FileNotFoundError("library directory was removed: %s" % self.library_dir)
 
         # Create the directory to store the episode
         episode_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            logger.debug(f"moving episode to '{episode_dir.relative_to(self.library_dir)}'")
+            logger.debug("moving episode to '%s'" % episode_dir.relative_to(self.library_dir))
             shutil.move(src=str(path), dst=str(episode_dir))
         except shutil.Error:
             # Destination path already exists
-            raise EpisodeExists(f"library already includes episode")
+            raise EpisodeExists("library already includes episode")
 
     def episode_dir(self, episode: Episode) -> Path:
         """
@@ -75,4 +75,4 @@ class StorageManager:
         :param episode: the episode information.
         :return: the path to the directory where the episode should be stored.
         """
-        return self.library_dir / episode.tvshow.name / f"Season {episode.season:02d}"
+        return self.library_dir / episode.tvshow.name / ("Season %02d" % episode.season)

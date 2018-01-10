@@ -1,11 +1,4 @@
-from typing import NamedTuple
+from collections import namedtuple
 
-
-class TVShow(NamedTuple):
-    name: str
-
-
-class Episode(NamedTuple):
-    tvshow: TVShow
-    season: int
-    number: int
+TVShow = namedtuple('TVShow', 'name')
+Episode = namedtuple('Episode', 'tvshow, season, number')

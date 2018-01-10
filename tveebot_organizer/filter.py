@@ -47,7 +47,7 @@ class Filter:
                 episode_file = None
 
         else:
-            raise ValueError(f"path '{path}' is neither a file or a directory")
+            raise ValueError("path '%s' is neither a file or a directory" % path)
 
         return episode_file
 

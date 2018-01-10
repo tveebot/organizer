@@ -34,7 +34,7 @@ class Watcher:
 
         # Stores the watch for the current watch directory
         # This watch is used when changing the current watch directory
-        self._last_watch: ObservedWatch = None
+        self._last_watch = None  # type: ObservedWatch
 
         # Event to indicate the main loop exited
         # Initially the event must be set

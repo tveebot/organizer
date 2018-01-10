@@ -48,12 +48,12 @@ def main():
         try:
             handler = logging.FileHandler(str(log_path))
         except OSError as error:
-            logger.error(f"failed to setup log file: {str(error)}")
+            logger.error("failed to setup log file: %s" % str(error))
             sys.exit(1)
 
         # Get handler from default logger
         # This is sort of an hack to get the formatter define in the default configuration file
-        default_handler: logging.FileHandler = logger.handlers[0]
+        default_handler = logger.handlers[0]
         handler.setFormatter(default_handler.formatter)
 
         # Add handler to each logger
@@ -75,7 +75,7 @@ def main():
             with open(config_file) as file:
                 config.read_file(file)
         except FileNotFoundError:
-            logger.error(f"config file was not found: {config_file}")
+            logger.error("config file was not found: %s" % config_file)
 
     if args['--watch']:
         config['watcher']['watch'] = args['--watch']

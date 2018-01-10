@@ -35,17 +35,17 @@ class Organizer:
         episode_file = self.filter.find_episode_file(path)
 
         if episode_file is None:
-            logger.info(f"ignored '{path.name}'")
+            logger.info("ignored '%s'" % path.name)
             return
 
-        logger.info(f"episode file is '{episode_file.name}'")
+        logger.info("episode file is '%s'" % episode_file.name)
 
         try:
             logger.debug("matching episode...")
             episode = self.matcher.match(path.name)
-            logger.info(f"episode matched to {str(episode)}")
+            logger.info("episode matched to %s" % str(episode))
         except ValueError:
-            logger.warning(f"ignored '{path.name}': could not match it to an episode")
+            logger.warning("ignored '%s': could not match it to an episode" % path.name)
             return
 
         try:
@@ -54,15 +54,15 @@ class Organizer:
 
             episode_dir = self.storage_manager.episode_dir(episode) \
                 .relative_to(self.storage_manager.library_dir)
-            logger.info(f"stored episode to {episode_dir}")
+            logger.info("stored episode to %s" % episode_dir)
 
         except EpisodeExists as error:
             logger.warning(str(error))
         except FileNotFoundError as error:
             logger.error(str(error))
         except OSError as error:
-            logger.error(f"got unexpected error: {str(error)}")
+            logger.error("got unexpected error: %s" % str(error))
         else:
             if os.path.exists(path):
                 shutil.rmtree(str(path))
-                logger.info(f"cleared {path.name} from watch directory")
+                logger.info("cleared '%s' from watch directory" % path.name)

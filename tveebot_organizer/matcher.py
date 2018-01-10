@@ -51,6 +51,6 @@ class Matcher:
                 episode = Episode(TVShow(tvshow_name), season, number)
 
         if episode is None:
-            raise ValueError(f"could not match name '{name}' to an episode")
+            raise ValueError("could not match name '%s' to an episode" % name)
 
         return episode
