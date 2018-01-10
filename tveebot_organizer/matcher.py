@@ -15,16 +15,19 @@ class Matcher:
     - TV.Show.Name.s01e02
     - TV.Show.Name.S01xE02
     - TV.Show.Name.1x02
+    - TV Show Name S01E02
+    - TV Show Name 1x02
 
     All of these examples correspond to Episode("TV Show Name", season=1, number=2)
 
     """
 
     # List of valid patterns to specify the episode's season and number
-    _patterns = [
-        re.compile('[Ss](?P<season>\d+)x?[Ee](?P<number>\d+)\Z'),
-        re.compile('(?P<season>\d+)x(?P<number>\d+)\Z'),
+    _episode_patterns = [
+        "[Ss](?P<season>\d+)x?[Ee](?P<number>\d+)",
+        "(?P<season>\d+)x(?P<number>\d+)",
     ]
+    _patterns = [re.compile("\w[. ]" + pattern + "([. \-]|\Z)") for pattern in _episode_patterns]
 
     def match(self, name: str) -> Episode:
         """
@@ -35,34 +38,25 @@ class Matcher:
 
         :raise ValueError: if it can not match *name* to an episode
         """
-        # The character '.' divides words
-        # Take each word
-        words = name.split('.')
-
-        # Look for an episode pattern
-        episode = None
-        for index, word in enumerate(words):
-
-            # Try to match word to any pattern, in the order they are specified
-            match = None
-            for pattern in self._patterns:
-                match = pattern.match(word)
-                if match:
-                    break
-
+        match = None
+        for pattern in self._patterns:
+            match = pattern.search(name)
             if match:
-                # The words before the episode pattern compose the tv show name.
-                tvshow_name = " ".join(words[:index])
+                break
 
-                # Capitalize the first letter of each word of the tvshow name
-                tvshow_name = tvshow_name.title()
-
-                season = int(match.group('season'))
-                number = int(match.group('number'))
-
-                episode = Episode(TVShow(tvshow_name), season, number)
-
-        if episode is None:
+        if not match:
             raise ValueError("could not match name '%s' to an episode" % name)
 
-        return episode
+        print(match)
+        print(name[match.start():match.end()])
+
+        # Character used to separate the words
+        split_char = name[match.start() + 1]
+        tvshow_name = name[:match.start() + 1]
+        tvshow_name = " ".join(tvshow_name.split(split_char))
+        tvshow_name = tvshow_name.title()
+
+        season = int(match.group('season'))
+        number = int(match.group('number'))
+
+        return Episode(TVShow(tvshow_name), season, number)

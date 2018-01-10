@@ -21,6 +21,13 @@ class TestMatcher:
         ("prison.break.1x02", Episode(TVShow("Prison Break"), season=1, number=2)),
         ("prison.break.1x2", Episode(TVShow("Prison Break"), season=1, number=2)),
         ("prison.break.1x12", Episode(TVShow("Prison Break"), season=1, number=12)),
+        ("prison break 1x12", Episode(TVShow("Prison Break"), season=1, number=12)),
+        ("A.S01E02", Episode(TVShow("A"), season=1, number=2)),
+        ("A S01E02", Episode(TVShow("A"), season=1, number=2)),
+        ("Prison Break S01E02", Episode(TVShow("Prison Break"), season=1, number=2)),
+        ("Mr. Robot S01E02", Episode(TVShow("Mr. Robot"), season=1, number=2)),
+        ("Mr. Robot 1x02", Episode(TVShow("Mr. Robot"), season=1, number=2)),
+        ("Prison Break S01E02-S01E03", Episode(TVShow("Prison Break"), season=1, number=2)),
     ])
     def test_valid_names(self, name, expected_episode):
         assert Matcher().match(name) == expected_episode
@@ -35,6 +42,12 @@ class TestMatcher:
         "Prison.Break.11",
         "Prison.Break.S1x01",
         "Prison.Break.1xE01",
+        "S01E01",
+        "AS01E01",
+        ".S01E01",
+        " S01E01",
+        "Prison BreakS01E01",
+        "Prison Break1x01",
     ])
     def test_invalid_names(self, name):
         with pytest.raises(ValueError):
