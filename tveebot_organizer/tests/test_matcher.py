@@ -15,6 +15,8 @@ class TestMatcher:
         ("prison.break.s01e01", Episode(TVShow("Prison Break"), season=1, number=1)),
         ("prison.break.S01e01", Episode(TVShow("Prison Break"), season=1, number=1)),
         ("prison.break.s01E01", Episode(TVShow("Prison Break"), season=1, number=1)),
+        ("prison.break.S01xE01", Episode(TVShow("Prison Break"), season=1, number=1)),
+        ("prison.break.s01xe01", Episode(TVShow("Prison Break"), season=1, number=1)),
     ])
     def test_valid_names(self, name, expected_episode):
         assert Matcher().match(name) == expected_episode

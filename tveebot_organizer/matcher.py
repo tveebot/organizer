@@ -12,13 +12,15 @@ class Matcher:
     Supported formats:
 
     - TV.Show.Name.S01E02.720p -> Episode("TV Show Name", season=1, number=2)
+    - TV.Show.Name.s01e02.720p -> Episode("TV Show Name", season=1, number=2)
+    - TV.Show.Name.S01xE02.720p -> Episode("TV Show Name", season=1, number=2)
 
     """
 
     # An episode pattern corresponds to a 'word' of the form S01E01
     # Where S01 indicates the episode corresponds to season 1
     # and E01 indicates the episode is the first episode of the season
-    _episode_pattern = re.compile('[Ss](?P<season>\d+)[Ee](?P<number>\d+)\Z')
+    _episode_pattern = re.compile('[Ss](?P<season>\d+)x?[Ee](?P<number>\d+)\Z')
 
     def match(self, name: str) -> Episode:
         """
