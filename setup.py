@@ -21,7 +21,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'tveebot-organizerd=tveebot_organizer.daemon:main',
+            'tveebot-organizer=tveebot_organizer.daemon:main',
         ],
     },
 
