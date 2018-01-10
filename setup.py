@@ -11,19 +11,18 @@ setup(
 
     packages=find_packages(),
 
+    package_data={
+        'tveebot_organizer': ['config.ini'],
+    },
+
     extras_require={
         'test': ['pytest'],
     },
 
     entry_points={
         'console_scripts': [
-            'episode-organizer-daemon=episode_organizer.daemon:main',
-            'episode-organizer-cli=episode_organizer.config_client:main',
+            'tveebot-organizerd=tveebot_organizer.daemon:main',
         ],
-    },
-
-    package_data={
-        'episode_organizer.daemon': ['default.ini'],
     },
 
 )
