@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 from pytest import raises
 
 from tveebot_organizer.organizer import Organizer
+from tveebot_organizer.tests.utils import path_from
 from tveebot_organizer.watcher import Watcher
 
 
@@ -31,18 +32,18 @@ class TestWatcher:
     def test_OrganizerIsCalledWhenAFileIsCreated(self, tmpdir):
         watch_dir = tmpdir.mkdir("watch")
 
-        with watching(Path(watch_dir)) as (_, organizer_mock):
+        with watching(path_from(watch_dir)) as (_, organizer_mock):
             watch_dir.join("file.txt").write("")
 
-        organizer_mock.organize.assert_called_once_with(Path(watch_dir) / "file.txt")
+        organizer_mock.organize.assert_called_once_with(path_from(watch_dir) / "file.txt")
 
     def test_OrganizerIsCalledWhenADirectoryIsCreated(self, tmpdir):
         watch_dir = tmpdir
 
-        with watching(Path(watch_dir)) as (_, organizer_mock):
+        with watching(path_from(watch_dir)) as (_, organizer_mock):
             watch_dir.mkdir("dir")
 
-        organizer_mock.organize.assert_called_once_with(Path(watch_dir) / "dir")
+        organizer_mock.organize.assert_called_once_with(path_from(watch_dir) / "dir")
 
     def test_OrganizerIsCalledWhenExistingFileIsMovedIntoTheWatchDirectory(self, tmpdir):
         watch_dir = tmpdir.mkdir("watch")
@@ -50,10 +51,10 @@ class TestWatcher:
         new_file = other_dir.join("file.txt")
         new_file.write("")
 
-        with watching(Path(watch_dir)) as (_, organizer_mock):
+        with watching(path_from(watch_dir)) as (_, organizer_mock):
             new_file.move(watch_dir.join("file.txt"))
 
-        organizer_mock.organize.assert_called_once_with(Path(watch_dir) / "file.txt")
+        organizer_mock.organize.assert_called_once_with(path_from(watch_dir) / "file.txt")
 
     def test_OrganizerIsCalledWhenExistingDirectoryIsMovedIntoTheWatchDirectory(self, tmpdir):
         watch_dir = tmpdir.mkdir("watch")
@@ -61,29 +62,29 @@ class TestWatcher:
         new_dir = other_dir.mkdir("dir")
         new_dir.join("file.txt").write("")
 
-        with watching(Path(watch_dir)) as (_, organizer_mock):
+        with watching(path_from(watch_dir)) as (_, organizer_mock):
             new_dir.move(watch_dir.join("dir"))
 
-        organizer_mock.organize.assert_called_once_with(Path(watch_dir) / "dir")
+        organizer_mock.organize.assert_called_once_with(path_from(watch_dir) / "dir")
 
     def test_OrganizerIsCalledWhenNewFileIsCreatedAfterChangingWatchDir(self, tmpdir):
         old_watch_dir = tmpdir.mkdir("watch1")
         new_watch_dir = tmpdir.mkdir("watch2")
 
-        with watching(Path(old_watch_dir)) as (watcher, organizer_mock):
-            watcher.watch_dir = Path(new_watch_dir)
+        with watching(path_from(old_watch_dir)) as (watcher, organizer_mock):
+            watcher.watch_dir = path_from(new_watch_dir)
             new_watch_dir.join("file.txt").write("")
 
-        organizer_mock.organize.assert_called_once_with(Path(new_watch_dir) / "file.txt")
-        assert watcher.watch_dir == Path(new_watch_dir)
+        organizer_mock.organize.assert_called_once_with(path_from(new_watch_dir) / "file.txt")
+        assert watcher.watch_dir == path_from(new_watch_dir)
 
     def test_OrganizerIsNOTCalledWhenNewFileIsCreatedInOldDirectoryAfterChangingWatchDir(
             self, tmpdir):
         old_watch_dir = tmpdir.mkdir("watch1")
         new_watch_dir = tmpdir.mkdir("watch2")
 
-        with watching(Path(old_watch_dir)) as (watcher, organizer_mock):
-            watcher.watch_dir = Path(new_watch_dir)
+        with watching(path_from(old_watch_dir)) as (watcher, organizer_mock):
+            watcher.watch_dir = path_from(new_watch_dir)
             old_watch_dir.join("file.txt").write("")
 
         organizer_mock.organize.assert_not_called()
@@ -92,20 +93,20 @@ class TestWatcher:
         old_watch_dir = tmpdir.mkdir("watch1")
         new_watch_dir = tmpdir.join("watch2")
 
-        with watching(Path(old_watch_dir)) as (watcher, organizer_mock):
+        with watching(path_from(old_watch_dir)) as (watcher, organizer_mock):
             with raises(OSError):
-                watcher.watch_dir = Path(new_watch_dir)
+                watcher.watch_dir = path_from(new_watch_dir)
 
             old_watch_dir.join("file.txt").write("")
 
-        organizer_mock.organize.assert_called_once_with(Path(old_watch_dir) / "file.txt")
-        assert watcher.watch_dir == Path(old_watch_dir)
+        organizer_mock.organize.assert_called_once_with(path_from(old_watch_dir) / "file.txt")
+        assert watcher.watch_dir == path_from(old_watch_dir)
 
     def test_OrganizerIsCalledWhenWatcherIsStartedAndWatchDirectoryContainsAFile(self, tmpdir):
         watch_dir = tmpdir.mkdir("watch")
         watch_dir.join("file.txt").write("")
 
-        with watching(Path(watch_dir)) as (_, organizer_mock):
+        with watching(path_from(watch_dir)) as (_, organizer_mock):
             pass
 
-        organizer_mock.organize.assert_called_once_with(Path(watch_dir) / "file.txt")
+        organizer_mock.organize.assert_called_once_with(path_from(watch_dir) / "file.txt")
