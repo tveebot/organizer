@@ -40,9 +40,13 @@ class Organizer:
 
         logger.info(f"episode file is '{episode_file.name}'")
 
-        logger.debug("matching episode...")
-        episode = self.matcher.match(path.name)
-        logger.info(f"episode matched to {str(episode)}")
+        try:
+            logger.debug("matching episode...")
+            episode = self.matcher.match(path.name)
+            logger.info(f"episode matched to {str(episode)}")
+        except ValueError:
+            logger.warning(f"ignored '{path.name}': could not match it to an episode")
+            return
 
         try:
             logger.debug("storing episode...")
