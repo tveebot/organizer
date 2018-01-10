@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='episode-organizer',
-    version='0.2',
+    version='0.1',
     description='Tool to organize video files corresponding to TV Shows',
     url='https://github.com/tveebot/organizer',
     license='MIT',
