@@ -1,5 +1,4 @@
 import logging
-import os
 import shutil
 from pathlib import Path
 
@@ -63,6 +62,6 @@ class Organizer:
         except OSError as error:
             logger.error("got unexpected error: %s" % str(error))
         else:
-            if os.path.exists(path):
+            if path.exists():
                 shutil.rmtree(str(path))
                 logger.info("cleared '%s' from watch directory" % path.name)

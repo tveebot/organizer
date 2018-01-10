@@ -72,7 +72,7 @@ def main():
         config_file = Path(args['--conf'])
 
         try:
-            with open(config_file) as file:
+            with open(str(config_file)) as file:
                 config.read_file(file)
         except FileNotFoundError:
             logger.error("config file was not found: %s" % config_file)
