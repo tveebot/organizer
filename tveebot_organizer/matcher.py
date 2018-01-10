@@ -18,7 +18,7 @@ class Matcher:
     # An episode pattern corresponds to a 'word' of the form S01E01
     # Where S01 indicates the episode corresponds to season 1
     # and E01 indicates the episode is the first episode of the season
-    _episode_pattern = re.compile('S(?P<season>\d+)E(?P<number>\d+)\Z')
+    _episode_pattern = re.compile('[Ss](?P<season>\d+)[Ee](?P<number>\d+)\Z')
 
     def match(self, name: str) -> Episode:
         """
