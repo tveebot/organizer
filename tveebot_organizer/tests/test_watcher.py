@@ -100,3 +100,12 @@ class TestWatcher:
 
         organizer_mock.organize.assert_called_once_with(Path(old_watch_dir) / "file.txt")
         assert watcher.watch_dir == Path(old_watch_dir)
+
+    def test_OrganizerIsCalledWhenWatcherIsStartedAndWatchDirectoryContainsAFile(self, tmpdir):
+        watch_dir = tmpdir.mkdir("watch")
+        watch_dir.join("file.txt").write("")
+
+        with watching(Path(watch_dir)) as (_, organizer_mock):
+            pass
+
+        organizer_mock.organize.assert_called_once_with(Path(watch_dir) / "file.txt")

@@ -64,6 +64,10 @@ class Watcher:
         """ Runs the watching until the *shutdown()* is called """
         self._exited.clear()
         try:
+            # Try to organize each file inside the watch directory
+            for path in self.watch_dir.iterdir():
+                self.organizer.organize(path)
+
             self._observer.start()
             self._last_watch = self._observer.schedule(Watcher.Handler(self), str(self.watch_dir))
             self._observer.join()
