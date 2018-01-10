@@ -97,6 +97,14 @@ def main():
         logger.info("use option '--library' to specify library directory")
         sys.exit(1)
 
+    if not watch_dir.is_dir():
+        logger.error("watch directory not found: %s" % watch_dir)
+        sys.exit(1)
+
+    if not library_dir.is_dir():
+        logger.error("library directory not found: %s" % library_dir)
+        sys.exit(1)
+
     organizer = Organizer(
         filter=Filter(),
         matcher=Matcher(),
