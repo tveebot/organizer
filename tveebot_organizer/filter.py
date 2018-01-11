@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 
 class Filter:
@@ -8,53 +8,51 @@ class Filter:
     single filter. The organizer relies on the filter to filter out files that do not correspond
     to episode files. Thus, it calls the filter every time is starts to organize something.
 
-    The filter includes a single method *find_episode_file()* which takes a path. This method is
-    able to handle both files and directories. If the input is a directory, it looks for the
-    episode file inside that directory and ignores all other files.
+    The filter includes a single method *filter()* which takes a path. This method is able to
+    handle both files and directories. If the input is a directory, it looks for all files
+    recursively and filters out those that cannot correspond to episode files.
     """
 
     # Supported video file extensions
     video_extensions = {'.mkv', '.mp4', '.avi', '.m4p', '.m4v'}
 
-    def find_episode_file(self, path: Path) -> Optional[Path]:
+    def filter(self, path: Path) -> List[Path]:
         """
-        Finds the episode file corresponding to the given *path* and returns it.
+        Filters all files corresponding to the given *path*, selecting only those that might
+        correspond to episode files.
 
         The 'path' argument may be a file or a directory.
 
-        If *path* is a file, then it assumes this file must be the episode file.
-        If *path* is a directory, then it looks for the largest video file inside the directory
-        and considers that to be the episode file.
+        If *path* is a video file, then it assumes this file must be the episode file. If *path*
+        is a directory, then it looks for video files inside the directory and returns only those.
 
-        If the episode file does not correspond to a video file, then it returns None. Returning
-        None indicates the filter was not able to find an episode file for the given *path*.
-
-        :raise: ValueError: if *path* is neither a file or a directory
+        This method returns a list of paths to the video files found for the given *path*. It
+        returns an empty list if it does not find any video file.
         """
+        video_files = []
         if path.is_file():
             if self.is_video_file(path):
-                episode_file = path
-            else:
-                episode_file = None
+                video_files = [path]
 
         elif path.is_dir():
-            try:
-                # Look for the biggest video file inside the directory
-                episode_file = max([file for file in path.iterdir() if self.is_video_file(file)],
-                                   key=lambda p: p.stat().st_size)
-            except ValueError:
-                # The directory is empty
-                episode_file = None
 
-        else:
-            raise ValueError("path '%s' is neither a file or a directory" % path)
+            # Look for video files in this directory an all sub-directories, recursively
+            video_files = []  # holds all video files found
+            directories = [path]  # keeps track of directories left to explore
+            while len(directories) > 0:
+                directory = directories.pop()
+                for item in directory.iterdir():
+                    if item.is_dir():
+                        directories.append(item)
+                    elif self.is_video_file(item):
+                        video_files.append(item)
 
-        return episode_file
+        return video_files
 
     @staticmethod
     def is_video_file(path: Path) -> bool:
         """
-        Determines whether not *path* corresponds to a video file or not.
+        Determines whether or not *path* corresponds to a video file or not.
 
         :return: True if *path* is a video file and False if otherwise.
         """

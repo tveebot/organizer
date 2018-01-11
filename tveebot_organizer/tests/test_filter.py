@@ -1,4 +1,5 @@
 import pytest
+from hamcrest import *
 
 from tveebot_organizer.filter import Filter
 from tveebot_organizer.tests.utils import path_from
@@ -50,19 +51,25 @@ class TestFilterFindEpisodeFile:
         video_file = tmpdir.join("video.mkv")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(video_file)) == path_from(video_file)
+        episode_files = Filter().filter(path_from(video_file))
 
-    def test_GivenANonVideoFileReturnsNone(self, tmpdir):
+        assert_that(episode_files, has_items(path_from(video_file)))
+
+    def test_GivenANonVideoFileReturnsAnEmptyList(self, tmpdir):
         video_file = tmpdir.join("video.txt")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(video_file)) is None
+        episode_files = Filter().filter(path_from(video_file))
+
+        assert_that(episode_files, is_(empty()))
 
     def test_GivenADirectoryWithASingleVideoFileReturnsThatFile(self, tmpdir):
         video_file = tmpdir.join("video.mkv")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) == path_from(video_file)
+        episode_files = Filter().filter(path_from(tmpdir))
+
+        assert_that(episode_files, has_items(path_from(video_file)))
 
     def test_GivenADirectoryWithOneVideoFileAndOtherNonVideoFilesReturnsTheVideoFile(self, tmpdir):
         tmpdir.join("other.txt").write("this is a text file")
@@ -70,23 +77,55 @@ class TestFilterFindEpisodeFile:
         video_file = tmpdir.join("video.mkv")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) == path_from(video_file)
+        episode_files = Filter().filter(path_from(tmpdir))
 
-    def test_GivenADirectoryWithTwoVideoFilesReturnsTheBiggestFile(self, tmpdir):
-        # Note the small file has only 4 characters and the big file has 13 characters
+        assert_that(episode_files, has_items(path_from(video_file)))
 
-        tmpdir.join("small_video.mkv").write("small")
-        big_video_file = tmpdir.join("big_video.mkv")
-        big_video_file.write("VERY BIG FILE")
+    def test_GivenADirectoryWithTwoVideoFilesReturnsBothFiles(self, tmpdir):
+        file1 = tmpdir.join("video1.mkv")
+        file2 = tmpdir.join("video2.mkv")
+        file1.write("")
+        file2.write("")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) == big_video_file
+        episode_files = Filter().filter(path_from(tmpdir))
 
-    def test_GivenAnEmptyDirectoryReturnsNone(self, tmpdir):
-        assert Filter().find_episode_file(path_from(tmpdir)) is None
+        assert_that(episode_files, has_items(path_from(file1), path_from(file2)))
 
-    def test_GivenADirectoryWithNoVideoFilesReturnsNone(self, tmpdir):
+    def test_GivenADirectoryWithTwoVideoFilesWithDifferentExtensionsReturnsBothFiles(self, tmpdir):
+        file1 = tmpdir.join("video1.mkv")
+        file2 = tmpdir.join("video2.avi")
+        file1.write("")
+        file2.write("")
+
+        episode_files = Filter().filter(path_from(tmpdir))
+
+        assert_that(episode_files, has_items(path_from(file1), path_from(file2)))
+
+    def test_GivenAnEmptyDirectoryReturnsAnEmptyList(self, tmpdir):
+        episode_files = Filter().filter(path_from(tmpdir))
+
+        assert_that(episode_files, is_(empty()))
+
+    def test_GivenADirectoryWithNoVideoFilesReturnsAnEmptyList(self, tmpdir):
         tmpdir.join("other.txt").write("this is a text file")
         tmpdir.join("other.mp3").write("this is a music file")
         tmpdir.mkdir("directory.mp4")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) is None
+        episode_files = Filter().filter(path_from(tmpdir))
+
+        assert_that(episode_files, is_(empty()))
+
+    def test_GivenADirectoryWithMultipleVideoFilesInSubDirectoriesReturnsAllVideoFiles(
+            self, tmpdir):
+        subdir1 = tmpdir.mkdir("dir1")
+        subdir2 = tmpdir.mkdir("dir2")
+        file1 = subdir1.join("video1.mkv")
+        file2 = tmpdir.join("video2.mkv")
+        file3 = subdir2.join("video3.avi")
+        file1.write("")
+        file2.write("")
+        file3.write("")
+
+        episode_files = Filter().filter(path_from(tmpdir))
+
+        assert_that(episode_files, has_items(path_from(file1), path_from(file2), path_from(file3)))

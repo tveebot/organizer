@@ -30,38 +30,43 @@ class Organizer:
         Takes a *path* to a file or a directory, matches with an episode, and stores it in a
         library.
         """
-        logger.debug("looking for episode file...")
-        episode_file = self.filter.find_episode_file(path)
+        matched_episode = False  # set to True if the organizer matches a file to an episode
 
-        if episode_file is None:
-            logger.info("ignored '%s'" % path.name)
+        logger.debug("looking for episode files...")
+        episode_files = self.filter.filter(path)
+
+        if not episode_files:
+            logger.info("no episode files were found at '%s'" % path.name)
             return
 
-        logger.info("episode file is '%s'" % episode_file.name)
+        for episode_file in episode_files:
+            logger.info("found episode file '%s'" % episode_file.name)
 
-        try:
-            logger.debug("matching episode...")
-            episode = self.matcher.match(path.name)
-            logger.info("episode matched to %s" % str(episode))
-        except ValueError:
-            logger.warning("ignored '%s': could not match it to an episode" % path.name)
-            return
+            try:
+                logger.debug("matching file to an episode...")
+                episode = self.matcher.match(episode_file.name)
+                matched_episode = True
+                logger.info("file matched to %s" % str(episode))
+            except ValueError:
+                logger.warning("ignored '%s': could not match it to an episode" % path.name)
+                return
 
-        try:
-            logger.debug("storing episode...")
-            self.storage_manager.store(episode, episode_file)
+            try:
+                logger.debug("storing episode...")
+                self.storage_manager.store(episode, episode_file)
 
-            episode_dir = self.storage_manager.episode_dir(episode) \
-                .relative_to(self.storage_manager.library_dir)
-            logger.info("stored episode to %s" % episode_dir)
+                episode_dir = self.storage_manager.episode_dir(episode) \
+                    .relative_to(self.storage_manager.library_dir)
+                logger.info("stored episode to %s" % episode_dir)
 
-        except EpisodeExists as error:
-            logger.warning(str(error))
-        except FileNotFoundError as error:
-            logger.error(str(error))
-        except OSError as error:
-            logger.error("got unexpected error: %s" % str(error))
-        else:
-            if path.exists():
-                shutil.rmtree(str(path))
-                logger.info("cleared '%s' from watch directory" % path.name)
+            except EpisodeExists as error:
+                logger.warning(str(error))
+            except FileNotFoundError as error:
+                logger.error(str(error))
+            except OSError as error:
+                logger.error("got unexpected error: %s" % str(error))
+
+        if matched_episode and path.exists():
+            # Clear directory with garbage files
+            shutil.rmtree(str(path))
+            logger.info("cleared '%s' from watch directory" % path.name)
