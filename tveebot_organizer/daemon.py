@@ -14,6 +14,7 @@ Options:
 """
 import configparser
 import logging
+import signal
 import sys
 from logging.config import fileConfig
 from pathlib import Path
@@ -113,19 +114,29 @@ def main():
 
     watcher = Watcher(watch_dir, organizer)
 
+    def shutdown():
+        logger.info("exiting...")
+        watcher.shutdown()
+        if watcher.wait(timeout=10):
+            logger.info("exited cleanly")
+        else:
+            logger.info("exited abruptly")
+
+    def signal_shutdown(signum, frame):
+        shutdown()
+
+    # A terminate signal stops all services
+    signal.signal(signal.SIGTERM, signal_shutdown)
+
     try:
         logger.info("running...")
         watcher.run_forever()
     except KeyboardInterrupt:
-        logger.info("exiting...")
+        pass  # exit the application
     except:
         logger.exception("unexpected error")
 
-    watcher.shutdown()
-    if watcher.wait(timeout=10):
-        logger.info("exited cleanly")
-    else:
-        logger.info("exited abruptly")
+    shutdown()
 
 
 if __name__ == '__main__':
