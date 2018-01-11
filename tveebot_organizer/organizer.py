@@ -30,6 +30,8 @@ class Organizer:
         Takes a *path* to a file or a directory, matches with an episode, and stores it in a
         library.
         """
+        matched_episode = False  # set to True if the organizer matches a file to an episode
+
         logger.debug("looking for episode files...")
         episode_files = self.filter.filter(path)
 
@@ -43,6 +45,7 @@ class Organizer:
             try:
                 logger.debug("matching file to an episode...")
                 episode = self.matcher.match(episode_file.name)
+                matched_episode = True
                 logger.info("file matched to %s" % str(episode))
             except ValueError:
                 logger.warning("ignored '%s': could not match it to an episode" % path.name)
@@ -62,7 +65,8 @@ class Organizer:
                 logger.error(str(error))
             except OSError as error:
                 logger.error("got unexpected error: %s" % str(error))
-            else:
-                if path.exists():
-                    shutil.rmtree(str(path))
-                    logger.info("cleared '%s' from watch directory" % path.name)
+
+        if matched_episode and path.exists():
+            # Clear directory with garbage files
+            shutil.rmtree(str(path))
+            logger.info("cleared '%s' from watch directory" % path.name)
