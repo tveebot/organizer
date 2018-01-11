@@ -28,8 +28,6 @@ class Filter:
 
         This method returns a list of paths to the video files found for the given *path*. It
         returns an empty list if it does not find any video file.
-
-        :raise: ValueError: if *path* is neither a file or a directory
         """
         video_files = []
         if path.is_file():
@@ -48,9 +46,6 @@ class Filter:
                         directories.append(item)
                     elif self.is_video_file(item):
                         video_files.append(item)
-
-        else:
-            raise ValueError("path '%s' is neither a file or a directory" % path)
 
         return video_files
 
