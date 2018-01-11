@@ -117,12 +117,6 @@ def main():
     def shutdown():
         logger.info("exiting...")
         watcher.shutdown()
-        if watcher.wait(timeout=10):
-            logger.info("exited cleanly")
-        else:
-            logger.info("exited abruptly")
-
-        sys.exit(0)
 
     def signal_shutdown(signum, frame):
         shutdown()
@@ -134,12 +128,15 @@ def main():
         logger.info("running...")
         watcher.run_forever()
     except KeyboardInterrupt:
-        pass  # exit the application
+        shutdown()
     except:
         logger.exception("unexpected error")
         sys.exit(3)
 
-    shutdown()
+    if watcher.wait(timeout=10):
+        logger.info("exited cleanly")
+    else:
+        logger.info("exited abruptly")
 
 
 if __name__ == '__main__':
