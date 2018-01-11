@@ -31,7 +31,7 @@ class Organizer:
         library.
         """
         logger.debug("looking for episode file...")
-        episode_file = self.filter.find_episode_file(path)
+        episode_file = self.filter.filter(path)
 
         if episode_file is None:
             logger.info("ignored '%s'" % path.name)

@@ -8,7 +8,7 @@ class Filter:
     single filter. The organizer relies on the filter to filter out files that do not correspond
     to episode files. Thus, it calls the filter every time is starts to organize something.
 
-    The filter includes a single method *find_episode_file()* which takes a path. This method is
+    The filter includes a single method *filter()* which takes a path. This method is
     able to handle both files and directories. If the input is a directory, it looks for the
     episode file inside that directory and ignores all other files.
     """
@@ -16,7 +16,7 @@ class Filter:
     # Supported video file extensions
     video_extensions = {'.mkv', '.mp4', '.avi', '.m4p', '.m4v'}
 
-    def find_episode_file(self, path: Path) -> Optional[Path]:
+    def filter(self, path: Path) -> Optional[Path]:
         """
         Finds the episode file corresponding to the given *path* and returns it.
 

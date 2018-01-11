@@ -50,19 +50,19 @@ class TestFilterFindEpisodeFile:
         video_file = tmpdir.join("video.mkv")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(video_file)) == path_from(video_file)
+        assert Filter().filter(path_from(video_file)) == path_from(video_file)
 
     def test_GivenANonVideoFileReturnsNone(self, tmpdir):
         video_file = tmpdir.join("video.txt")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(video_file)) is None
+        assert Filter().filter(path_from(video_file)) is None
 
     def test_GivenADirectoryWithASingleVideoFileReturnsThatFile(self, tmpdir):
         video_file = tmpdir.join("video.mkv")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) == path_from(video_file)
+        assert Filter().filter(path_from(tmpdir)) == path_from(video_file)
 
     def test_GivenADirectoryWithOneVideoFileAndOtherNonVideoFilesReturnsTheVideoFile(self, tmpdir):
         tmpdir.join("other.txt").write("this is a text file")
@@ -70,7 +70,7 @@ class TestFilterFindEpisodeFile:
         video_file = tmpdir.join("video.mkv")
         video_file.write("")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) == path_from(video_file)
+        assert Filter().filter(path_from(tmpdir)) == path_from(video_file)
 
     def test_GivenADirectoryWithTwoVideoFilesReturnsTheBiggestFile(self, tmpdir):
         # Note the small file has only 4 characters and the big file has 13 characters
@@ -79,14 +79,14 @@ class TestFilterFindEpisodeFile:
         big_video_file = tmpdir.join("big_video.mkv")
         big_video_file.write("VERY BIG FILE")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) == big_video_file
+        assert Filter().filter(path_from(tmpdir)) == big_video_file
 
     def test_GivenAnEmptyDirectoryReturnsNone(self, tmpdir):
-        assert Filter().find_episode_file(path_from(tmpdir)) is None
+        assert Filter().filter(path_from(tmpdir)) is None
 
     def test_GivenADirectoryWithNoVideoFilesReturnsNone(self, tmpdir):
         tmpdir.join("other.txt").write("this is a text file")
         tmpdir.join("other.mp3").write("this is a music file")
         tmpdir.mkdir("directory.mp4")
 
-        assert Filter().find_episode_file(path_from(tmpdir)) is None
+        assert Filter().filter(path_from(tmpdir)) is None
