@@ -122,6 +122,8 @@ def main():
         else:
             logger.info("exited abruptly")
 
+        sys.exit(0)
+
     def signal_shutdown(signum, frame):
         shutdown()
 
