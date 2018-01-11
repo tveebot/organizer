@@ -42,7 +42,7 @@ class Organizer:
 
             try:
                 logger.debug("matching file to an episode...")
-                episode = self.matcher.match(path.name)
+                episode = self.matcher.match(episode_file.name)
                 logger.info("file matched to %s" % str(episode))
             except ValueError:
                 logger.warning("ignored '%s': could not match it to an episode" % path.name)
