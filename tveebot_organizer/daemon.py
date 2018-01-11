@@ -135,6 +135,7 @@ def main():
         pass  # exit the application
     except:
         logger.exception("unexpected error")
+        sys.exit(3)
 
     shutdown()
 
